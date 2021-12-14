@@ -1159,7 +1159,7 @@ void InitQueuedCmdServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &
 }
 
 
-
+#include <stdio.h>
 
 
 int main(int argc, char **argv)
@@ -1179,6 +1179,7 @@ int main(int argc, char **argv)
         break;
         case DobotConnect_Occupied:
             ROS_ERROR("Invalid port name or Dobot is occupied by other application!");
+            getchar();
             return -3;
         break;
         default:
