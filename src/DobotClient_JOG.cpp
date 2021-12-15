@@ -123,7 +123,7 @@ int main(int argc, char **argv)
 
     // SetCmdTimeout
     ros::ServiceClient client;
-
+    ros::service::waitForService("/DobotServer/SetCmdTimeout");
     client = n.serviceClient<dobot::SetCmdTimeout>("/DobotServer/SetCmdTimeout");
     dobot::SetCmdTimeout srv;
     srv.request.timeout = 3000;
