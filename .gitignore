@@ -1,3 +1,1 @@
-# .开头的任何文件
-.*
-!.gitignore
+/.vscode
