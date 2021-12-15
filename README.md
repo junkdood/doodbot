@@ -1,5 +1,16 @@
 # dobot_magician
 
+### run
+```
+rosrun dobot DobotServer ttyUSB0
+rosrun dobot DobotClient_PTP
+rosrun dobot DobotClient_JOG
+```
+or
+```
+roslaunch dobot jog.launch
+```
+
 ### some ros command
 
 ```
