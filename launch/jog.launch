@@ -2,4 +2,5 @@
   <arg name="port" default="ttyUSB0"/>
   <node name="DobotServer" pkg="dobot" type="DobotServer" args="$(arg port)" output="screen"/>
   <node name="DobotClient" pkg="dobot" type="DobotClient_JOG" output="screen"/>
+  <node name="DobotPose" pkg="dobot" type="DobotPose" output="screen"/>
 </launch>

@@ -234,6 +234,10 @@ add_executable(Aclient src/Aclient.cpp)
 target_link_libraries(Aclient ${catkin_LIBRARIES})
 add_dependencies(Aclient dobot_gencpp)
 
+add_executable(DobotPose src/DobotPose.cpp)
+target_link_libraries(DobotPose ${catkin_LIBRARIES})
+add_dependencies(DobotPose dobot_gencpp)
+
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
