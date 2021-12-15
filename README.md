@@ -1,7 +1,11 @@
 # dobot_magician
 
+### some ros command
 
-
+```
+rqt_graph
+rosbag
+```
 
 ### problem solved
 
