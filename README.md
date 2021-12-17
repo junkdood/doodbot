@@ -11,6 +11,21 @@ or
 roslaunch dobot jog.launch
 ```
 
+### control
+
+| key | move |
+| :---: | :----: |
+|w|forward|
+|a|left|
+|s|backward|
+|d|right|
+|u|up|
+|i|down|
+|j|hand counterclockwise|
+|k|hand clockwise|
+|others|stop|
+
+
 ### some ros command
 
 ```sh

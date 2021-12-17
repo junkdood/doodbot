@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include "dobot/SetCmdTimeout.h"
 #include "dobot/GetPose.h"
+#include "dobot/GetHOMEParams.h"
+#include "dobot/SetHOMEParams.h"
 
 int main(int argc, char **argv)
 {
@@ -26,6 +28,15 @@ int main(int argc, char **argv)
             return -1;
         }
         ROS_INFO("\nx:%f\ny:%f\nz:%f\njointAngle:\n%f\n%f\n%f\n%f\n", srv.response.x, srv.response.y, srv.response.z, srv.response.jointAngle[0], srv.response.jointAngle[1], srv.response.jointAngle[2], srv.response.jointAngle[3]);
+        
+        // client = n.serviceClient<dobot::GetHOMEParams>("/DobotServer/GetHOMEParams");
+        // dobot::GetHOMEParams srv1;
+        // if (client.call(srv1) == false) {
+        //     ROS_ERROR("Failed to call GetHOMEParams.");
+        //     return -1;
+        // }
+        // ROS_INFO("\nx:%f\ny:%f\nz:%f\n", srv1.response.x, srv1.response.y, srv1.response.z);
+        
         ros::Duration(0.5).sleep();
     }while(true);
     return 0;
