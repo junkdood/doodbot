@@ -38,6 +38,6 @@ int main(int argc, char **argv)
         // ROS_INFO("\nx:%f\ny:%f\nz:%f\n", srv1.response.x, srv1.response.y, srv1.response.z);
         
         ros::Duration(0.5).sleep();
-    }while(true);
+    }while(ros::ok());
     return 0;
 }
