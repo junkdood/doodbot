@@ -226,18 +226,13 @@ add_executable(DobotClient_PTP src/DobotClient_PTP.cpp)
 target_link_libraries(DobotClient_PTP ${catkin_LIBRARIES})
 add_dependencies(DobotClient_PTP dobot_gencpp)
 
-add_executable(Aserver src/Aserver.cpp)
-target_link_libraries(Aserver ${catkin_LIBRARIES})
-add_dependencies(Aserver dobot_gencpp)
-
-add_executable(Aclient src/Aclient.cpp)
-target_link_libraries(Aclient ${catkin_LIBRARIES})
-add_dependencies(Aclient dobot_gencpp)
-
 add_executable(DobotPose src/DobotPose.cpp)
 target_link_libraries(DobotPose ${catkin_LIBRARIES})
 add_dependencies(DobotPose dobot_gencpp)
 
+add_executable(SetHome src/SetHome.cpp)
+target_link_libraries(SetHome ${catkin_LIBRARIES} DobotDll)
+add_dependencies(SetHome dobot_gencpp)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}

@@ -51,6 +51,7 @@ int main(int argc, char **argv)
 
     // Set end effector parameters
     client = n.serviceClient<dobot::SetEndEffectorParams>("/DobotServer/SetEndEffectorParams");
+    client.waitForExistence();
     dobot::SetEndEffectorParams srv5;
     srv5.request.xBias = 70;
     srv5.request.yBias = 0;

@@ -1,0 +1,4 @@
+<launch>
+  <arg name="port" default="ttyUSB0"/>
+  <node name="SetHome" pkg="dobot" type="SetHome" args="$(arg port)" output="screen"/>
+</launch>
