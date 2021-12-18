@@ -133,13 +133,6 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    // client = n.serviceClient<dobot::SetHOMECmd>("/DobotServer/SetHOMECmd");
-    // dobot::SetHOMECmd srv1;
-    // if (client.call(srv1) == false) {
-    //     ROS_ERROR("Failed to call SetHOMECmd. Maybe DobotServer isn't started yet!");
-    //     return -1;
-    // }
-
     boost::thread t = boost::thread(boost::bind(&keyboardLoop, boost::ref(n)));
     ros::spin();
     t.interrupt();
