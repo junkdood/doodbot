@@ -1205,6 +1205,11 @@ int main(int argc, char **argv)
     InitEIOServices(n, serverVec);
     InitQueuedCmdServices(n, serverVec);
 
+    //开启服务前自动归零
+    HOMECmd cmd;
+    uint64_t queuedCmdIndex;
+    SetHOMECmd(&cmd, true, &queuedCmdIndex);
+
     ROS_INFO("Dobot service running...");
     ros::spin();
     ROS_INFO("Dobot service exiting...");
