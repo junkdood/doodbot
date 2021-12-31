@@ -190,7 +190,7 @@ CATKIN_DEPENDS roscpp rospy std_msgs message_runtime geometry_msgs
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 4)
     include_directories(
@@ -233,6 +233,14 @@ add_dependencies(DobotPose dobot_gencpp)
 add_executable(SetHome src/SetHome.cpp)
 target_link_libraries(SetHome ${catkin_LIBRARIES} DobotDll)
 add_dependencies(SetHome dobot_gencpp)
+
+
+
+add_executable(${PROJECT_NAME}_node src/Hardware.cpp)
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} DobotDll)
+add_dependencies(${PROJECT_NAME}_node dobot_gencpp)
+
+
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
