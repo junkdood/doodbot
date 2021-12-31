@@ -20,4 +20,4 @@ class Hardware_Interface{
 
     private:
     double _RPD=M_PI/180;
-}
+};
