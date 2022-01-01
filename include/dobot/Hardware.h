@@ -3,6 +3,8 @@
 #include <ros/ros.h>
 #include <DobotDll.h>
 
+#include<bits/stdc++.h>
+
 
 enum joint_set{IDLE, Joint1_p, Joint1_n, Joint2_p, Joint2_n, Joint3_p, Joint3_n, Joint4_p, Joint4_n};
 
@@ -16,7 +18,7 @@ class Hardware_Interface{
     JOGJointParams Get_Params();
     void Set_Ratio();
     JOGCommonParams Get_Ratio();
-    void Send_Ctrl_Cmd(int duration, joint_set target_joint);
+    void Send_Ctrl_Cmd(uint32_t duration, joint_set target_joint);
 
     private:
     double _RPD=M_PI/180;

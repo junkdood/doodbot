@@ -45,3 +45,5 @@ rosbag
    ```sh
    rosrun dobot DobotServer /dev/tty
    ```
+
+2. 因为机械臂关机之后关节不会锁定，重新开机后会有极大的误差，一定要跑归零
