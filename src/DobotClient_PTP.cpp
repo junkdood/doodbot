@@ -144,6 +144,7 @@ int main(int argc, char **argv)
         } while (1);
   
         ros::spinOnce();
+        break;
     }
 
     return 0;
