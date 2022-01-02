@@ -13,7 +13,9 @@ dobot magician 提供了点到点的控制方式和直接控制关节转动的�
 几何求解了该机械臂的运动学方程和对应逆解
 
 直接用余弦定理求解x，y，z坐标与机械臂关节的关系，公式如下。需要注意机械臂关节角度能取到什么范围，好区分角度大于小于0的情况。
+
 <img src="assets/arm_physics.png" alt="arm_physics" style="zoom:50%;" />
+
 对应代码
 ```c++
 void Hardware_Interface::xyz_to_jointAngle(float x, float y, float z, float (&jointAngle)[4]){
@@ -40,6 +42,6 @@ void Hardware_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float 
     return;
 }
 ```
-
+测试了许多姿态下都能正确计算，暂时没有发现bug
 
 下一任务：使用 casadi 求解库实现简单点到点规划。
