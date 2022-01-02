@@ -108,6 +108,30 @@ void Hardware_Interface::Send_Ctrl_Cmd(uint32_t duration, joint_set target_joint
     do{
         GetQueuedCmdCurrentIndex(&executedCmdIndex);
     }while(executedCmdIndex < queuedCmdIndex);
-    return;
 
+    return;
+}
+
+void Hardware_Interface::xyz_to_jointAngle(float x, float y, float z, float (&jointAngle)[4]){
+    double r_2 = x*x + y*y;
+    double d_2 = r_2 + z*z;
+    double d = sqrt(d_2);
+    jointAngle[0]=asin(y/sqrt(r_2));
+    jointAngle[1]=acos(z/d) - acos((d_2 + _l1_2 - _l2_2)/(2*_l1*d));
+    jointAngle[2]=acos((d_2 + _l2_2 - _l1_2)/(2*_l2*d)) - asin(z/d);
+    jointAngle[0] = jointAngle[0]*_DPR;
+    jointAngle[1] = jointAngle[1]*_DPR;
+    jointAngle[2] = jointAngle[2]*_DPR;
+    return;
+}
+
+void Hardware_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z){
+    double j0 = jointAngle[0]*_RPD;
+    double j1 = jointAngle[1]*_RPD;
+    double j2 = jointAngle[2]*_RPD;
+    double r = _l1*sin(j1) + _l2*cos(j2);
+    x = r*cos(j0);
+    y = r*sin(j0);
+    z = _l1*cos(j1) - _l2*sin(j2);
+    return;
 }
