@@ -112,7 +112,7 @@ void Hardware_Interface::Send_Ctrl_Cmd(uint32_t duration, joint_set target_joint
     return;
 }
 
-void Hardware_Interface::xyz_to_jointAngle(float x, float y, float z, float (&jointAngle)[4]){
+void Hardware_Interface::xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]){
     double r_2 = x*x + y*y;
     double d_2 = r_2 + z*z;
     double d = sqrt(d_2);

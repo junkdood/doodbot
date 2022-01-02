@@ -20,7 +20,7 @@ class Hardware_Interface{
     JOGCommonParams Get_Ratio();
     void Send_Ctrl_Cmd(uint32_t duration, joint_set target_joint);
 
-    void xyz_to_jointAngle(float x, float y, float z, float (&jointAngle)[4]);
+    void xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]);
 
     void jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z);
 
@@ -32,4 +32,10 @@ class Hardware_Interface{
     const double _l2 = 147;
     const double _l1_2 = _l1*_l1;
     const double _l2_2 = _l2*_l2;
+
+
+    // -90 < jointAngle[0] < 90
+    // 0 < jointAngle[1] < 85
+    // -10 < jointAngle[2] < 90
+    // jointAngle[1] - 50 < jointAngle[2] < jointAngle[1] + 60 //手测
 };
