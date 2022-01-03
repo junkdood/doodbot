@@ -47,3 +47,13 @@ rosbag
    ```
 
 2. 因为机械臂关机之后关节不会锁定，重新开机后会有极大的误差，一定要跑归零
+3. c++ 安装 casadi
+   ```sh
+   git clone https://github.com/casadi/casadi.git -b master casadi
+   cd casadi
+   mkdir build
+   cd build
+   cmake -DWITH_PYTHON=ON ..
+   make
+   sudo make install
+   ```

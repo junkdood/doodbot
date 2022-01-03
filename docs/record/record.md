@@ -16,25 +16,19 @@ dobot magician 提供了点到点的控制方式和直接控制关节转动的�
 
 <img src="assets/arm_physics.png" alt="arm_physics" style="zoom:50%;" />
 
-对应代码
+对应伪代码
 ```c++
-void Hardware_Interface::xyz_to_jointAngle(float x, float y, float z, float (&jointAngle)[4]){
+void xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]){
     double r_2 = x*x + y*y;
     double d_2 = r_2 + z*z;
     double d = sqrt(d_2);
     jointAngle[0]=asin(y/sqrt(r_2));
     jointAngle[1]=acos(z/d) - acos((d_2 + _l1_2 - _l2_2)/(2*_l1*d));
     jointAngle[2]=acos((d_2 + _l2_2 - _l1_2)/(2*_l2*d)) - asin(z/d);
-    jointAngle[0] = jointAngle[0]*_DPR;
-    jointAngle[1] = jointAngle[1]*_DPR;
-    jointAngle[2] = jointAngle[2]*_DPR;
     return;
 }
 
-void Hardware_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z){
-    double j0 = jointAngle[0]*_RPD;
-    double j1 = jointAngle[1]*_RPD;
-    double j2 = jointAngle[2]*_RPD;
+void jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z){
     double r = _l1*sin(j1) + _l2*cos(j2);
     x = r*cos(j0);
     y = r*sin(j0);
@@ -43,5 +37,11 @@ void Hardware_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float 
 }
 ```
 测试了许多姿态下都能正确计算，暂时没有发现bug
+
+下一任务：使用 casadi 求解库实现简单点到点规划。
+
+#### 2022-1-3
+安装casadi，还在考虑用c写还是python
+决定再重读一下论文在继续写
 
 下一任务：使用 casadi 求解库实现简单点到点规划。
