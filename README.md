@@ -50,6 +50,7 @@ rosbag
 3. c++ 安装 casadi
    ```sh
    sudo apt-get install coinor-libipopt-dev
+   sudo apt install gfortran
    git clone https://github.com/casadi/casadi.git -b master casadi
    cd casadi
    mkdir build
