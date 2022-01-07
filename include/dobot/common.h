@@ -23,15 +23,18 @@ typedef struct {
 }State;
 
 typedef struct{
-    double l;
-    double m1;
-    double m2;
-    double g;
-}cart_pole_model;
+    double l0;
+    double l1;
+    double l2;
+}arm_model;
 
 typedef struct{
-    double d_min;
-    double d_max;
-    double u_min;
-    double u_max;
+    double j0_min;
+    double j0_max;
+    double j1_min;
+    double j1_max;
+    double j2_min;
+    double j2_max;
+    double j1_sub_j2_min;
+    double j1_sub_j2_max;
 }constraint_value;

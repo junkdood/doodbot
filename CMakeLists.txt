@@ -230,8 +230,8 @@ add_executable(SetHome src/SetHome.cpp)
 target_link_libraries(SetHome ${catkin_LIBRARIES} DobotDll)
 add_dependencies(SetHome dobot_gencpp)
 
-add_executable(${PROJECT_NAME}_node src/Hardware.cpp src/plan.cpp)
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} DobotDll)
+add_executable(${PROJECT_NAME}_node src/Hardware.cpp src/plan.cpp src/solver.cpp)
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} DobotDll casadi)
 add_dependencies(${PROJECT_NAME}_node dobot_gencpp)
 
 
