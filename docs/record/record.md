@@ -53,3 +53,8 @@ void jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z){
 不过先实现一个杀鸡用牛刀的版本吧。
 
 下一任务：继续实现。
+
+
+#### 2022-1-8
+用casadi写SystemDynamics的时候感觉用JOG接口定义的方式相当奇怪，想调用dll里面的sendpluse直接控制步进电机
+但是官方文档没写接口用法，打算发邮件问一下。
