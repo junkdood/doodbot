@@ -18,6 +18,7 @@ private:
     Function systemDynamics;
     Function getSystemDynamics();
     void setOptColloc();
+    void setParametersValue(const State& initialState, const State& finalState);
 
 
     arm_model model;
@@ -29,6 +30,6 @@ private:
     casadi::Opti opti;
     std::unique_ptr<casadi::OptiSol> solution;
     casadi::MX initialStateParameters, finalStateParameters;
-    casadi::MX X, A, U, T;
-    casadi::MX minJ0, maxJ0, minJ1, maxJ1, minJ2, maxJ2, minJ1subJ2, maxJ1subJ2;
+    casadi::MX X, A, V, T;
+    casadi::MX minJ0, maxJ0, minJ1, maxJ1, minJ2, maxJ2, minJ1subJ2, maxJ1subJ2, minV, maxV;
 };

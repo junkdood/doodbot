@@ -9,7 +9,8 @@ int main(int argc, char **argv){
     ros::init(argc, argv, "test");
     
 
-    Hardware_Interface test(argv[1]);
+    // Hardware_Interface test(argv[1]);
+    
 
 
     // control test
@@ -27,32 +28,60 @@ int main(int argc, char **argv){
 
 
     //pose test
-    while(ros::ok){
-        Pose init_pose = test.Get_Pose();
-        float my_jointAngle[4] = {0};
-        float my_x = 0;
-        float my_y = 0;
-        float my_z = 0;
+    // while(ros::ok){
+    //     Pose init_pose = test.Get_Pose();
+    //     float my_jointAngle[4] = {0};
+    //     float my_x = 0;
+    //     float my_y = 0;
+    //     float my_z = 0;
 
-        test.xyz_to_jointAngle(init_pose.x, init_pose.y, init_pose.z, my_jointAngle);
-        test.jointAngle_to_xyz(init_pose.jointAngle, my_x, my_y, my_z);
+    //     test.xyz_to_jointAngle(init_pose.x, init_pose.y, init_pose.z, my_jointAngle);
+    //     test.jointAngle_to_xyz(init_pose.jointAngle, my_x, my_y, my_z);
 
-        printf("x: %f  %f\n",init_pose.x, my_x);
-        printf("y: %f  %f\n",init_pose.y, my_y);
-        printf("z: %f  %f\n",init_pose.z, my_z);
+    //     printf("x: %f  %f\n",init_pose.x, my_x);
+    //     printf("y: %f  %f\n",init_pose.y, my_y);
+    //     printf("z: %f  %f\n",init_pose.z, my_z);
 
-        printf("J1: %f  %f\n",init_pose.jointAngle[0], my_jointAngle[0]);
-        printf("J2: %f  %f\n",init_pose.jointAngle[1], my_jointAngle[1]);
-        printf("J3: %f  %f\n",init_pose.jointAngle[2], my_jointAngle[2]);
+    //     printf("J1: %f  %f\n",init_pose.jointAngle[0], my_jointAngle[0]);
+    //     printf("J2: %f  %f\n",init_pose.jointAngle[1], my_jointAngle[1]);
+    //     printf("J3: %f  %f\n",init_pose.jointAngle[2], my_jointAngle[2]);
 
-        printf("=============================================================\n");
+    //     printf("=============================================================\n");
 
-        ros::Duration(0.1).sleep();
-    }
+    //     ros::Duration(0.1).sleep();
+    // }
 
 
     //key ctrl test
     // test.Key_Ctrl();
+
+
+
+
+
+
+    Settings co_settings;
+    co_settings.phaseLength = 10;
+    co_settings.time = 2;
+    co_settings._costWeights.control = 1;
+    co_settings.solverVerbosity = 0;
+    co_settings.ipoptLinearSolver = "mumps";
+
+    State initialState, finalState;
+    initialState.state = {75, 0, 0, 0};
+    finalState.state = {80, 10, 0, 0};
+
+    arm_model model = {138, 135, 147};
+    constraint_value constraint = {-90, 90, 0, 85, -10, 90, -60, 50, -15, 15};
+
+    DirectCollocationSolver co_solver(model, constraint);
+    co_solver.setupProblemColloc(co_settings);
+    bool co_ok = co_solver.solveColloc(initialState, finalState);
+    DM co_sol_state, co_sol_control;
+    if(co_ok) co_solver.getSolutionColloc(co_sol_state, co_sol_control);
+    std::cout<<"collocation\n";
+    std::cout << "state:\n" << co_sol_state << "\ncontrol:\n" << co_sol_control << std::endl;
+
     
     return 0;
 }

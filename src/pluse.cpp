@@ -32,10 +32,16 @@ int main(int argc, char **argv){
     }
     ROS_INFO("\nx:%f\ny:%f\nz:%f\njointAngle:\n%f\n%f\n%f\n%f\n", pose.x, pose.y, pose.z, pose.jointAngle[0], pose.jointAngle[1], pose.jointAngle[2], pose.jointAngle[3]);
 
+    IOPWM PWM;
+    if(GetIOPWM(&PWM)!=DobotCommunicate_NoError){
+        throw "Communicate Failed";
+    }
+    ROS_INFO("\nfrequency:%f\ndutyCycle:%f\n",PWM.frequency, PWM.dutyCycle);
+
     PluseCmd cmd;
-    cmd.j1=100;
+    cmd.j1=0;
     cmd.j2=0;
-    cmd.j3=0;
+    cmd.j3=500;
     cmd.j4=0;
     cmd.e1=0;
     cmd.e2=0;
@@ -47,6 +53,12 @@ int main(int argc, char **argv){
     else{
         ROS_INFO("Faild, error code: %d",res);
     }
+
+    if(GetPose(&pose)!=DobotCommunicate_NoError){
+        throw "Communicate Failed";
+    }
+    ROS_INFO("\nx:%f\ny:%f\nz:%f\njointAngle:\n%f\n%f\n%f\n%f\n", pose.x, pose.y, pose.z, pose.jointAngle[0], pose.jointAngle[1], pose.jointAngle[2], pose.jointAngle[3]);
+
 
     DisconnectDobot();
 

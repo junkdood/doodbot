@@ -37,4 +37,6 @@ typedef struct{
     double j2_max;
     double j1_sub_j2_min;
     double j1_sub_j2_max;
+    double v_min;
+    double v_max;
 }constraint_value;
