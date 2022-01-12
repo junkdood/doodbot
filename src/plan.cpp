@@ -72,7 +72,8 @@ int main(int argc, char **argv){
     finalState.state = {80, 10, 0, 0};
 
     arm_model model = {138, 135, 147};
-    constraint_value constraint = {-90, 90, 0, 85, -10, 90, -60, 50, -15, 15};
+    double RPD=acos(-1)/180;
+    constraint_value constraint = {-90 * RPD, 90 * RPD, 0 * RPD, 85 * RPD, -10 * RPD, 90 * RPD, -60 * RPD, 50 * RPD, -15 * RPD, 15 * RPD};
 
     DirectCollocationSolver co_solver(model, constraint);
     co_solver.setupProblemColloc(co_settings);

@@ -51,11 +51,12 @@ rosbag
    ```sh
    sudo apt-get install coinor-libipopt-dev
    sudo apt install gfortran
-   git clone https://github.com/casadi/casadi.git -b master casadi
+   sudo apt install swig
+   git clone https://github.com/casadi/casadi.git -b master casadi 
    cd casadi
    mkdir build
    cd build
-   cmake -DWITH_PYTHON=ON ..
+   cmake -DWITH_PYTHON=ON -DWITH_IPOPT=true ..
    make
    sudo make install
    ```

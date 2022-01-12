@@ -74,3 +74,7 @@ void jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z){
 不如只输出路径，控制用PTP
 
 求解器已基本实现，差状态方程。求导太难了
+
+#### 2022-1-12
+状态方程写完了，写法比较暴力，肯定还有优化空间。
+先当作是对的好了

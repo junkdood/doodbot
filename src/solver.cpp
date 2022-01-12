@@ -37,9 +37,15 @@ Function DirectCollocationSolver::getSystemDynamics(){
     MX dt = MX::sym("dt");
     MX A(4, 1); //状态的导数(就是速度)
 
-    A(0) = V(0);//too hard
-    A(1) = V(1);
-    A(2) = V(2);
+    MX J(4, 1);
+    J(0) = asin(X(1)/sqrt(pow(X(0),2) + pow(X(1),2)));
+    J(1) = acos(X(2)/sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2))) - acos(((pow(X(0),2) + pow(X(1),2) + pow(X(2),2)) + pow(model.l1,2) - pow(model.l2,2))/(2*model.l1*sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2))));
+    J(2) = acos(((pow(X(0),2) + pow(X(1),2) + pow(X(2),2)) + pow(model.l2,2) - pow(model.l1,2))/(2*model.l2*sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2)))) - asin(X(2)/sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2)));
+    J(3) = X(3);
+
+    A(0) = -X(1)*V(0) + model.l1*cos(J(0))*cos(J(1))*V(1) - model.l2*cos(J(0))*sin(J(2))*V(2);
+    A(1) = X(0)*V(0) + model.l1*sin(J(0))*cos(J(1))*V(1) - model.l2*sin(J(0))*sin(J(2))*V(2);
+    A(2) = -model.l1*sin(J(1))*V(1) - model.l2*cos(J(2))*V(2);
     A(3) = V(3);
 
     return Function("dynamics", {X, V, dt}, {A});
@@ -61,9 +67,9 @@ void DirectCollocationSolver::setOptColloc(){
     costWeights w = settings._costWeights;
     for(casadi_int k = 0; k < N; ++k){
         if(k % 2 == 0 && k + 2 <= N){
-            f_curr = MX::vertcat(systemDynamics({X(S1(), k), V(S1(), k), 0}));
-            f_next = MX::vertcat(systemDynamics({X(S1(), k + 2), V(S1(), k + 2), 0}));
-            f_mid = MX::vertcat(systemDynamics({X(S1(), k + 1), V(S1(), k + 1), 0}));
+            f_curr = MX::vertcat(systemDynamics({X(S1(), k), V(S1(), k), dT}));
+            f_next = MX::vertcat(systemDynamics({X(S1(), k + 2), V(S1(), k + 2), dT}));
+            f_mid = MX::vertcat(systemDynamics({X(S1(), k + 1), V(S1(), k + 1), dT}));
             opti.subject_to(X(S1(), k + 2) == X(S1(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
             costFunction += w.control * dT / 6 * ( ((pow(V(0,k),2)+pow(V(1,k),2)+pow(V(2,k),2)+pow(V(3,k),2))/4) + 4 * ((pow(V(0,k+1),2)+pow(V(1,k+1),2)+pow(V(2,k+1),2)+pow(V(3,k+1),2))/4) + ((pow(V(0,k+2),2)+pow(V(1,k+2),2)+pow(V(2,k+2),2)+pow(V(3,k+2),2))/4));
@@ -105,7 +111,7 @@ bool DirectCollocationSolver::setupProblemColloc(const Settings& _settings){
         casadi_int ipoptVerbosity = static_cast<long long>(solverVerbosity - 1);
         ipoptOptions["print_level"] = ipoptVerbosity;
         casadiOptions["print_time"] = true;
-        casadiOptions["bound_consistency"] = false;
+        casadiOptions["bound_consistency"] = false; 
     } else {
         ipoptOptions["print_level"] = 0;
         casadiOptions["print_time"] = false;
