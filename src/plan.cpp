@@ -1,6 +1,24 @@
 #include "dobot/Hardware.h"
 #include "dobot/solver.h"
 
+
+void xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]){
+    double _RPD=acos(-1)/180;
+    double _DPR=180/acos(-1);
+    double _l0 = 138;
+    double _l1 = 135;
+    double _l2 = 147;
+    double _l1_2 = _l1*_l1;
+    double _l2_2 = _l2*_l2;
+    double r_2 = x*x + y*y;
+    double d_2 = r_2 + z*z;
+    double d = sqrt(d_2);
+    jointAngle[0]=asin(y/sqrt(r_2));
+    jointAngle[1]=acos(z/d) - acos((d_2 + _l1_2 - _l2_2)/(2*_l1*d));
+    jointAngle[2]=acos((d_2 + _l2_2 - _l1_2)/(2*_l2*d)) - asin(z/d);
+    return;
+}
+
 int main(int argc, char **argv){
     if (argc < 2) {
         ROS_ERROR("[USAGE]Application portName");
@@ -56,13 +74,13 @@ int main(int argc, char **argv){
     // test.Key_Ctrl();
 
 
-
+    
 
 
 
     Settings co_settings;
     co_settings.phaseLength = 10;
-    co_settings.time = 2;
+    co_settings.time = 1;
     co_settings._costWeights.control = 1;
     co_settings.solverVerbosity = 0;
     co_settings.ipoptLinearSolver = "mumps";
@@ -83,6 +101,13 @@ int main(int argc, char **argv){
     std::cout<<"collocation\n";
     std::cout << "state:\n" << co_sol_state << "\ncontrol:\n" << co_sol_control << std::endl;
 
+    //check
+    float jointAngle[4] = {0};
+    for(int i = 0; i <  co_settings.phaseLength; ++i){
+        xyz_to_jointAngle(co_sol_state(0,i).scalar(),co_sol_state(1,i).scalar(),co_sol_state(2,i).scalar(),jointAngle);
+        std::cout << jointAngle[0]<< ", " << jointAngle[1]<< ", " << jointAngle[2] << std::endl;
+
+    }
     
     return 0;
 }

@@ -78,3 +78,7 @@ void jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z){
 #### 2022-1-12
 状态方程写完了，写法比较暴力，肯定还有优化空间。
 先当作是对的好了
+
+现在机械臂的运动需求就可以公式化了，costfuntion可以是控制量不能太大以免速度过高，也可以是xyz轴尽量靠近目标以降低抖动。
+
+简单验证了一下写的状态方程应该没问题
