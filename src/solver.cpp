@@ -1,7 +1,5 @@
 #include "dobot/solver.h"
 
-using S1 = casadi::Slice;
-
 DirectCollocationSolver::DirectCollocationSolver(const arm_model& _model, const constraint_value& _constraint){
     model = _model;
     solverState = SolverState::NOT_INITIALIZED;
@@ -58,8 +56,8 @@ void DirectCollocationSolver::setOptColloc(){
     A = opti.variable(4, N + 1);
     V = opti.variable(4, N + 1);
 
-    opti.subject_to(X(S1(), 0) == initialStateParameters);
-    opti.subject_to(X(S1(), N) == finalStateParameters);
+    opti.subject_to(X(Slice(), 0) == initialStateParameters);
+    opti.subject_to(X(Slice(), N) == finalStateParameters);
 
     MX dT = T / phaseLength;
     MX f_curr, f_mid, f_next;
@@ -67,16 +65,16 @@ void DirectCollocationSolver::setOptColloc(){
     costWeights w = settings._costWeights;
     for(casadi_int k = 0; k < N; ++k){
         if(k % 2 == 0 && k + 2 <= N){
-            f_curr = MX::vertcat(systemDynamics({X(S1(), k), V(S1(), k), dT}));
-            f_next = MX::vertcat(systemDynamics({X(S1(), k + 2), V(S1(), k + 2), dT}));
-            f_mid = MX::vertcat(systemDynamics({X(S1(), k + 1), V(S1(), k + 1), dT}));
-            opti.subject_to(X(S1(), k + 2) == X(S1(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
+            f_curr = MX::vertcat(systemDynamics({X(Slice(), k), V(Slice(), k), dT}));
+            f_next = MX::vertcat(systemDynamics({X(Slice(), k + 2), V(Slice(), k + 2), dT}));
+            f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), dT}));
+            opti.subject_to(X(Slice(), k + 2) == X(Slice(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
             costFunction += w.control * dT / 6 * ( ((pow(V(0,k),2)+pow(V(1,k),2)+pow(V(2,k),2)+pow(V(3,k),2))/4) + 4 * ((pow(V(0,k+1),2)+pow(V(1,k+1),2)+pow(V(2,k+1),2)+pow(V(3,k+1),2))/4) + ((pow(V(0,k+2),2)+pow(V(1,k+2),2)+pow(V(2,k+2),2)+pow(V(3,k+2),2))/4));
         }
         else if(k % 2 != 0){
-            opti.subject_to(X(S1(), k) == 0.5 * (X(S1(), k - 1) + X(S1(), k + 1)) + dT * (f_curr - f_next) / 8);
-            opti.subject_to(V(S1(), k) == 0.5 * (V(S1(), k - 1) + V(S1(), k + 1)));
+            opti.subject_to(X(Slice(), k) == 0.5 * (X(Slice(), k - 1) + X(Slice(), k + 1)) + dT * (f_curr - f_next) / 8);
+            opti.subject_to(V(Slice(), k) == 0.5 * (V(Slice(), k - 1) + V(Slice(), k + 1)));
 
         }
         opti.subject_to(minJ0 <= asin(X(1, k)/sqrt(pow(X(0,k),2) + pow(X(1,k),2))) <= maxJ0);
@@ -141,8 +139,8 @@ bool DirectCollocationSolver::solveColloc(const State& initialState, const State
     casadi_int npoints = 2 * static_cast<casadi_int> (settings.phaseLength);
     DM initPos = DM::zeros(4,1);
     DM finalPos = DM::zeros(4,1);
-    initPos = initialState.state(S1());
-    finalPos = finalState.state(S1());
+    initPos = initialState.state(Slice());
+    finalPos = finalState.state(Slice());
     DM interpolatedPosition(4, 1);
     DM linSpacePoints = DM::linspace(0, 1, npoints + 1);
     for(casadi_int k = 0; k < npoints + 1; ++k){
@@ -151,10 +149,10 @@ bool DirectCollocationSolver::solveColloc(const State& initialState, const State
         vel and control all set zero
         */
         interpolatedPosition = initPos + linSpacePoints(k) * (finalPos - initPos);
-        opti.set_initial(X(S1(), k), interpolatedPosition);
+        opti.set_initial(X(Slice(), k), interpolatedPosition);
     }
     for(casadi_int k = 0; k < npoints; ++k){
-        opti.set_initial(V(S1(), k), 0);
+        opti.set_initial(V(Slice(), k), 0);
     }
     
     solverState = SolverState::PROBLEM_SET;
@@ -180,9 +178,9 @@ void DirectCollocationSolver::getSolutionColloc(DM& state, DM& control){
     control = DM::zeros(4, settings.phaseLength + 1);
     for(int i = 0; i < 2 * settings.phaseLength + 1; ++i){
         if(i % 2 == 0){
-            //std::cout <<"i\n" << i << "\n"<<control_all(S1(), i) << "\n\n";
-            state(S1(),a) = DM::vertcat({state_all(S1(), i)});
-            control(S1(),a) = control_all(S1(), i);
+            //std::cout <<"i\n" << i << "\n"<<control_all(Slice(), i) << "\n\n";
+            state(Slice(),a) = DM::vertcat({state_all(Slice(), i)});
+            control(Slice(),a) = control_all(Slice(), i);
             a++;
         }
     }

@@ -21,6 +21,7 @@ class Hardware_Interface{
     void Set_Ratio();
     JOGCommonParams Get_Ratio();
     void Send_Ctrl_Cmd(uint32_t duration, joint_set target_joint);
+    void Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, double dt);
 
     void Key_Ctrl();
 
@@ -28,12 +29,14 @@ class Hardware_Interface{
 
     void jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z);
 
-    private:
+    
     const double _RPD=acos(-1)/180;
     const double _DPR=180/acos(-1);
     const double _l0 = 138;
     const double _l1 = 135;
     const double _l2 = 147;
+
+    private:
     const double _l1_2 = _l1*_l1;
     const double _l2_2 = _l2*_l2;
 

@@ -6,6 +6,7 @@ using casadi::DM;
 using casadi::MX;
 using casadi::Function;
 using casadi::Opti;
+using casadi::Slice;
 
 class DirectCollocationSolver{
 public:

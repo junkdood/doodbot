@@ -174,6 +174,22 @@ void Hardware_Interface::Send_Ctrl_Cmd(uint32_t duration, joint_set target_joint
     return;
 }
 
+void Hardware_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, double dt){
+
+    PTPCmd cmd;
+    uint64_t queuedCmdIndex;
+
+    cmd.ptpMode = PTPMOVJANGLEINCMode;
+    cmd.x = j0 * dt * _DPR;
+    cmd.y = j1 * dt * _DPR;
+    cmd.z = j2 * dt * _DPR;
+    cmd.r = j3 * dt * _DPR;
+    if(SetPTPCmd(&cmd, true, &queuedCmdIndex)!=DobotCommunicate_NoError){
+        throw "Communicate Failed";
+    }
+    ros::Duration(0.1).sleep();
+}
+
 void Hardware_Interface::Key_Ctrl(){
     tty_set();
 

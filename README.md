@@ -1,17 +1,23 @@
 # dobot_magician
 
-### run
+### 运行
+归零
 ```sh
-rosrun dobot DobotServer ttyUSB0
-rosrun dobot DobotClient_PTP
-rosrun dobot DobotClient_JOG
+roslaunch dobot sethome.launch
 ```
-or
+
+
+直接键盘控制
 ```sh
 roslaunch dobot jog.launch
 ```
 
-### control
+跑模型预测控制
+```sh
+roslaunch dobot hardware_test.launch
+```
+
+### 键盘控制按键指南
 
 | key | move |
 | :---: | :----: |
@@ -31,6 +37,9 @@ roslaunch dobot jog.launch
 ```sh
 rqt_graph
 rosbag
+rosrun tf view_frames
+rosrun tf tf_echo
+rviz
 ```
 
 ### problem solved
