@@ -1,4 +1,0 @@
-<launch>
-  <arg name="port" default="ttyUSB0"/>
-  <node name="pluse" pkg="dobot" type="pluse" args="$(arg port)" output="screen"/>
-</launch>
