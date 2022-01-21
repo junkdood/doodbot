@@ -112,7 +112,8 @@ int main(int argc, char **argv){
 
 
     //专门与dobot交互的对象
-    Hardware_Interface dobot_interface(argv[1]);
+    // Hardware_Interface dobot_interface(argv[1]);
+    Simulator_Interface dobot_interface;
 
     //求解器的基础设置
     Settings settings;

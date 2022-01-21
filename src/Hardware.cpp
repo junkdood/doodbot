@@ -299,3 +299,76 @@ void Hardware_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float 
     z = _l1*cos(j1) - _l2*sin(j2);
     return;
 }
+
+
+
+
+
+
+//#############################################################################
+
+
+
+Simulator_Interface::Simulator_Interface(float x, float y, float z){
+    xyz_to_jointAngle(x, y, z, _home_jointAngle);
+    Set_Home();
+    ros::Time::init();
+    return;
+}
+
+Simulator_Interface::~Simulator_Interface(){
+    return;
+}
+
+void Simulator_Interface::Set_Home(){
+    _sim_jointAngle[0] = _home_jointAngle[0];
+    _sim_jointAngle[1] = _home_jointAngle[1];
+    _sim_jointAngle[2] = _home_jointAngle[2];
+    _sim_jointAngle[3] = _home_jointAngle[3];
+    return;
+}
+
+Pose Simulator_Interface::Get_Pose(){
+    Pose pose;
+    jointAngle_to_xyz(_sim_jointAngle, pose.x, pose.y, pose.z);
+    pose.jointAngle[0] = _sim_jointAngle[0];
+    pose.jointAngle[1] = _sim_jointAngle[1];
+    pose.jointAngle[2] = _sim_jointAngle[2];
+    pose.jointAngle[3] = _sim_jointAngle[3];
+    return pose;
+}
+
+void Simulator_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, double dt){
+    _sim_jointAngle[0] += j0*dt*_DPR;
+    _sim_jointAngle[1] += j1*dt*_DPR;
+    _sim_jointAngle[2] += j2*dt*_DPR;
+    _sim_jointAngle[3] += j3*dt*_DPR;
+}
+
+void Simulator_Interface::xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]){
+    double r_2 = x*x + y*y;
+    double d_2 = r_2 + z*z;
+    double d = sqrt(d_2);
+    jointAngle[0]=asin(y/sqrt(r_2));
+    jointAngle[1]=acos(z/d) - acos((d_2 + _l1_2 - _l2_2)/(2*_l1*d));
+    jointAngle[2]=acos((d_2 + _l2_2 - _l1_2)/(2*_l2*d)) - asin(z/d);
+    jointAngle[0] = jointAngle[0]*_DPR;
+    jointAngle[1] = jointAngle[1]*_DPR;
+    jointAngle[2] = jointAngle[2]*_DPR;
+    return;
+}
+
+void Simulator_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z){
+    double j0 = jointAngle[0]*_RPD;
+    double j1 = jointAngle[1]*_RPD;
+    double j2 = jointAngle[2]*_RPD;
+    double r = _l1*sin(j1) + _l2*cos(j2);
+    x = r*cos(j0);
+    y = r*sin(j0);
+    z = _l1*cos(j1) - _l2*sin(j2);
+    return;
+}
+
+bool Simulator_Interface::check_valid(){
+    return -90 < _sim_jointAngle[0] < 90 && 0 < _sim_jointAngle[1] < 85 && -10 < _sim_jointAngle[2] < 90 && 50 > _sim_jointAngle[1] - _sim_jointAngle[2] > -60;
+}
