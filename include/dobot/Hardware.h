@@ -66,7 +66,7 @@ class Simulator_Interface{
     const double _l2 = 147;
 
     private:
-    bool check_valid();
+    bool isValid();
     float _sim_jointAngle[4];
     float _home_jointAngle[4];
     const double _l1_2 = _l1*_l1;

@@ -1,3 +1,9 @@
+#include "ros/ros.h"
+#include "std_msgs/Header.h"
+#include "geometry_msgs/Pose.h"
+#include "geometry_msgs/Point.h"
+#include "dobot/Board.h"
+
 #include "dobot/Hardware.h"
 #include "dobot/solver.h"
 
@@ -19,12 +25,19 @@
 //     return;
 // }
 
+
+void msgCallback(const dobot::Board::ConstPtr &msg){
+  std::cout << "msg->grid_size=" << msg->grid_size << std::endl;
+}
+
 int main(int argc, char **argv){
     if (argc < 2) {
         ROS_ERROR("[USAGE]Application portName");
         return -1;
     }
     ros::init(argc, argv, "test");
+    ros::NodeHandle n;
+    ros::Time::init();
     
 
     // Hardware_Interface test(argv[1]);
@@ -175,6 +188,11 @@ int main(int argc, char **argv){
     ros::Duration(1.0).sleep();
     final_pose = dobot_interface.Get_Pose();
     ROS_INFO("\nx:%f\ny:%f\nz:%f\n", final_pose.x, final_pose.y, final_pose.z);
+
+
+    //vis
+    ros::Subscriber msg_sub = n.subscribe("vis_msg", 100, msgCallback);
+    ros::spin();
     
     return 0;
 }

@@ -52,6 +52,7 @@ find_package(casadi REQUIRED)
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
+  Board.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -145,6 +146,7 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
 )
 
 
@@ -241,6 +243,10 @@ add_dependencies(pluse dobot_gencpp)
 add_executable(${PROJECT_NAME}_node src/Hardware.cpp src/plan.cpp src/solver.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} DobotDll casadi)
 add_dependencies(${PROJECT_NAME}_node dobot_gencpp)
+
+add_executable(vis src/vis.cpp)
+target_link_libraries(vis ${catkin_LIBRARIES})
+add_dependencies(vis dobot_gencpp)
 
 
 

@@ -1,0 +1,3 @@
+<launch>
+  <node name="vis" pkg="dobot" type="vis" output="screen"/>
+</launch>

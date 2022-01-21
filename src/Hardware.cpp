@@ -369,6 +369,6 @@ void Simulator_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float
     return;
 }
 
-bool Simulator_Interface::check_valid(){
+bool Simulator_Interface::isValid(){
     return -90 < _sim_jointAngle[0] < 90 && 0 < _sim_jointAngle[1] < 85 && -10 < _sim_jointAngle[2] < 90 && 50 > _sim_jointAngle[1] - _sim_jointAngle[2] > -60;
 }
