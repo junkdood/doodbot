@@ -17,6 +17,11 @@ roslaunch dobot jog.launch
 roslaunch dobot hardware_test.launch
 ```
 
+跑相机输出topic
+```sh
+roslaunch dobot vis.launch
+```
+
 ### 键盘控制按键指南
 
 | key | move |
