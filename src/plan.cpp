@@ -27,7 +27,7 @@
 
 
 void msgCallback(const dobot::Board::ConstPtr &msg){
-  std::cout << "msg->grid_size=" << msg->grid_size << std::endl;
+    std::cout << "msg->grid_size=" << msg->grid_size << std::endl;
 }
 
 int main(int argc, char **argv){
