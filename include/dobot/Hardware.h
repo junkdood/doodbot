@@ -1,10 +1,9 @@
 #pragma once
 
-#include <ros/ros.h>
 #include <DobotDll.h>
 
 #include<bits/stdc++.h>
-#include <termios.h>
+#include <unistd.h>
 
 
 enum joint_set{IDLE, Joint1_p, Joint1_n, Joint2_p, Joint2_n, Joint3_p, Joint3_n, Joint4_p, Joint4_n};
@@ -22,8 +21,6 @@ class Hardware_Interface{
     JOGCommonParams Get_Ratio();
     void Send_Ctrl_Cmd(uint32_t duration, joint_set target_joint);
     void Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, double dt);
-
-    void Key_Ctrl();
 
     void xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]);
 

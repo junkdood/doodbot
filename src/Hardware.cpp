@@ -1,73 +1,17 @@
 #include "dobot/Hardware.h"
 
-static struct termios ori_attr, cur_attr;
-
-static __inline 
-int tty_reset(void){
-    if (tcsetattr(STDIN_FILENO, TCSANOW, &ori_attr) != 0)
-            return -1;
-
-    return 0;
-}
-
-
-static __inline
-int tty_set(void){
-        
-    if ( tcgetattr(STDIN_FILENO, &ori_attr) )
-            return -1;
-    
-    memcpy(&cur_attr, &ori_attr, sizeof(cur_attr) );
-    cur_attr.c_lflag &= ~ICANON;
-    cur_attr.c_lflag &= ~ECHO;
-    cur_attr.c_cc[VMIN] = 1;
-    cur_attr.c_cc[VTIME] = 0;
-
-    if (tcsetattr(STDIN_FILENO, TCSANOW, &cur_attr) != 0)
-            return -1;
-
-    return 0;
-}
-
-static __inline
-int kbhit(void) {               
-    fd_set rfds;
-    struct timeval tv;
-    int retval;
-
-    FD_ZERO(&rfds);
-    FD_SET(0, &rfds);
-    tv.tv_sec  = 0;
-    tv.tv_usec = 0;
-
-    retval = select(1, &rfds, NULL, NULL, &tv);
-
-    if (retval == -1) {
-            perror("select()");
-            return 0;
-    } else if (retval)
-            return 1;
-    else
-            return 0;
-    return 0;
-}
-
-
-
-
 Hardware_Interface::Hardware_Interface(char* port, unsigned int timeout){
     int result = ConnectDobot(port, 115200, 0, 0);
     switch (result) {
         case DobotConnect_NoError:
         break;
         case DobotConnect_NotFound:
-            ROS_ERROR("Dobot not found!");
+            std::cout << "Dobot not found!" << std::endl;
             throw "Connect Failed";
             return;
         break;
         case DobotConnect_Occupied:
-            ROS_ERROR("Invalid port name or Dobot is occupied by other application!");
-            getchar();
+            std::cout << "Invalid port name or Dobot is occupied by other application!" << std::endl;
             throw "Connect Failed";
             return;
         break;
@@ -79,7 +23,6 @@ Hardware_Interface::Hardware_Interface(char* port, unsigned int timeout){
         DisconnectDobot();
         throw "Communicate Failed";
     }
-    ros::Time::init();
     return;
 }
 
@@ -187,94 +130,9 @@ void Hardware_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, d
     if(SetPTPCmd(&cmd, true, &queuedCmdIndex)!=DobotCommunicate_NoError){
         throw "Communicate Failed";
     }
-    ros::Duration(0.1).sleep();
+    usleep (100000);
 }
 
-void Hardware_Interface::Key_Ctrl(){
-    tty_set();
-
-    JOGJointParams Initparams = Get_Params();
-    JOGJointParams Stopparams = Initparams;
-    Stopparams.velocity[0] = 0;
-    Stopparams.velocity[1] = 0;
-    Stopparams.velocity[2] = 0;
-    Set_Params(Stopparams);
-
-    JOGJointParams J1_p_Params = Stopparams;
-    J1_p_Params.velocity[0] = 15;
-    JOGJointParams J2_p_Params = Stopparams;
-    J2_p_Params.velocity[1] = 15;
-    JOGJointParams J3_p_Params = Stopparams;
-    J3_p_Params.velocity[2] = 15;
-
-    JOGCmd jcmd;
-    uint64_t queuedCmdIndex;
-    jcmd.isJoint = true;
-    jcmd.cmd = Joint1_p;
-    if(SetJOGCmd(&jcmd, true, &queuedCmdIndex)!=DobotCommunicate_NoError){
-        throw "Communicate Failed";
-    }
-
-    jcmd.cmd = Joint2_p;
-    if(SetJOGCmd(&jcmd, true, &queuedCmdIndex)!=DobotCommunicate_NoError){
-        throw "Communicate Failed";
-    }
-
-    jcmd.cmd = Joint3_p;
-    if(SetJOGCmd(&jcmd, true, &queuedCmdIndex)!=DobotCommunicate_NoError){
-        throw "Communicate Failed";
-    }
-    bool flag = true;
-    char temp = 'w';
-    while(flag){
-        usleep (50000);
-        if(kbhit()){
-            temp=getchar(); 
-            switch(temp) {
-                case 'q':
-                    ROS_INFO("q");
-                    Set_Params(J1_p_Params);
-                break;
-                case 'w':
-                    ROS_INFO("w");
-                break;
-                case 'a':
-                    ROS_INFO("a");
-                    Set_Params(J2_p_Params);
-                break;
-                case 's':
-                    ROS_INFO("s");
-                break;
-                case 'z':
-                    ROS_INFO("z");
-                    Set_Params(J3_p_Params);
-                break;
-                case 'x':
-                    ROS_INFO("x");
-                break;
-                case 'f':
-                    flag = false;
-                    ROS_INFO("f");
-                break;
-                default:
-                    ROS_INFO("DEFAULT:%c", temp);
-                    Set_Params(Stopparams);
-                break;
-            }
-        }
-        else{
-            ROS_INFO("Empty");
-            Pose init_pose = Get_Pose();
-            ROS_INFO("\nx:%f\ny:%f\nz:%f\njointAngle:\n%f\n%f\n%f\n%f\n", init_pose.x, init_pose.y, init_pose.z, init_pose.jointAngle[0], init_pose.jointAngle[1], init_pose.jointAngle[2], init_pose.jointAngle[3]);
-        }
-    }
-    jcmd.cmd = IDLE;
-    if(SetJOGCmd(&jcmd, true, &queuedCmdIndex)!=DobotCommunicate_NoError){
-        throw "Communicate Failed";
-    }
-    Set_Params(Initparams);
-    tty_reset();
-}
 
 void Hardware_Interface::xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]){
     double r_2 = x*x + y*y;
@@ -312,7 +170,6 @@ void Hardware_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float 
 Simulator_Interface::Simulator_Interface(float x, float y, float z){
     xyz_to_jointAngle(x, y, z, _home_jointAngle);
     Set_Home();
-    ros::Time::init();
     return;
 }
 
