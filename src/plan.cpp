@@ -6,11 +6,16 @@
 
 #include "dobot/Hardware.h"
 #include "dobot/solver.h"
+#include "dobot/player.h"
 
 
 
 void msgCallback(const dobot::Board::ConstPtr &msg){
     std::cout << "msg->grid_size=" << msg->grid_size << std::endl;
+    ChessPlayer player;
+    player.SetState(1);
+    player.PlayChess();
+    std::cout << "location=" << player.Getlocation() << std::endl;
 }
 
 int main(int argc, char **argv){
