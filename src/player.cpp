@@ -4,10 +4,6 @@ ChessPlayer::ChessPlayer(){
     _playerstate = ChessPlayer::NOT_INITIALIZED;
 }
 
-ChessPlayer::~ChessPlayer(){
-
-}
-
 
 void ChessPlayer::SetState(int msg){
     _msg = _msg;

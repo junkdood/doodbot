@@ -17,6 +17,7 @@ DirectCollocationSolver::DirectCollocationSolver(const arm_model& _model, const 
     T = opti.parameter();
     initialStateParameters = opti.parameter(4);
     finalStateParameters = opti.parameter(4);
+    KalmanParameters = opti.parameter(4);
     opti.set_value(minJ0, _constraint.j0_min);
     opti.set_value(maxJ0, _constraint.j0_max);
     opti.set_value(minJ1, _constraint.j1_min);
@@ -32,6 +33,7 @@ DirectCollocationSolver::DirectCollocationSolver(const arm_model& _model, const 
 Function DirectCollocationSolver::getSystemDynamics(){
     MX X = MX::sym("x", 4); //状态
     MX V = MX::sym("v", 4); //控制量
+    MX KF = MX::sym("kf", 4); //卡尔曼滤波器修正
     MX dt = MX::sym("dt");
     MX A(4, 1); //状态的导数(就是速度)
 
@@ -46,7 +48,12 @@ Function DirectCollocationSolver::getSystemDynamics(){
     A(2) = -model.l1*sin(J(1))*V(1) - model.l2*cos(J(2))*V(2);
     A(3) = V(3);
 
-    return Function("dynamics", {X, V, dt}, {A});
+    A(0) = A(0) + KF(0);
+    A(1) = A(1) + KF(1);
+    A(2) = A(2) + KF(2);
+    A(3) = A(3) + KF(3);
+
+    return Function("dynamics", {X, V, KF, dt}, {A});
 }
 void DirectCollocationSolver::setOptColloc(){
     casadi_int phaseLength = static_cast<casadi_int> (settings.phaseLength);
@@ -65,9 +72,9 @@ void DirectCollocationSolver::setOptColloc(){
     costWeights w = settings._costWeights;
     for(casadi_int k = 0; k < N; ++k){
         if(k % 2 == 0 && k + 2 <= N){
-            f_curr = MX::vertcat(systemDynamics({X(Slice(), k), V(Slice(), k), dT}));
-            f_next = MX::vertcat(systemDynamics({X(Slice(), k + 2), V(Slice(), k + 2), dT}));
-            f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), dT}));
+            f_curr = MX::vertcat(systemDynamics({X(Slice(), k), V(Slice(), k), KalmanParameters, dT}));
+            f_next = MX::vertcat(systemDynamics({X(Slice(), k + 2), V(Slice(), k + 2), KalmanParameters, dT}));
+            f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), KalmanParameters, dT}));
             opti.subject_to(X(Slice(), k + 2) == X(Slice(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
             costFunction += w.control * dT / 6 * ( ((pow(V(0,k),2)+pow(V(1,k),2)+pow(V(2,k),2)+pow(V(3,k),2))/4) + 4 * ((pow(V(0,k+1),2)+pow(V(1,k+1),2)+pow(V(2,k+1),2)+pow(V(3,k+1),2))/4) + ((pow(V(0,k+2),2)+pow(V(1,k+2),2)+pow(V(2,k+2),2)+pow(V(3,k+2),2))/4));
@@ -125,17 +132,18 @@ bool DirectCollocationSolver::setupProblemColloc(const Settings& _settings){
     return true;
 }
 
-void DirectCollocationSolver::setParametersValue(const State& initialState, const State& finalState){
+void DirectCollocationSolver::setParametersValue(const State& initialState, const State& finalState, const State& Kalman){
     opti.set_value(initialStateParameters, initialState.state);
     opti.set_value(finalStateParameters, finalState.state);
+    opti.set_value(KalmanParameters, Kalman.state);
 }
 
-bool DirectCollocationSolver::solveColloc(const State& initialState, const State& finalState){
+bool DirectCollocationSolver::solveColloc(const State& initialState, const State& finalState, const State& Kalman){
     if(solverState == SolverState::NOT_INITIALIZED){
         throw std::runtime_error("problem not initialized");
         return false;
     }
-    setParametersValue(initialState, finalState);
+    setParametersValue(initialState, finalState, Kalman);
     casadi_int npoints = 2 * static_cast<casadi_int> (settings.phaseLength);
     DM initPos = DM::zeros(4,1);
     DM finalPos = DM::zeros(4,1);

@@ -5,7 +5,7 @@
 class ChessPlayer{
     public:
     ChessPlayer();
-    ~ChessPlayer();
+    ~ChessPlayer(){};
 
     void SetState(int msg);
 

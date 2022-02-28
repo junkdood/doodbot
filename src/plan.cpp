@@ -151,7 +151,7 @@ int main(int argc, char **argv){
     solver.setupProblemColloc(settings);
 
     
-    State initialState, finalState;
+    State initialState, finalState, Kalman;
     //设置开始状态，读取xyz坐标
     Pose init_pose = dobot_interface.Get_Pose();
     initialState.state = {init_pose.x, init_pose.y, init_pose.z, 0};
@@ -160,8 +160,11 @@ int main(int argc, char **argv){
     //设置目标点
     finalState.state = {init_pose.x + 5, init_pose.y, init_pose.z, 0};
 
+    //设置卡尔曼滤波器的参数
+    Kalman.state = {0, 0, 0, 0};
+
     //求解
-    bool ok = solver.solveColloc(initialState, finalState);
+    bool ok = solver.solveColloc(initialState, finalState, Kalman);
 
     //获取求解结果，即控制量
     DM sol_state, sol_control;
@@ -184,7 +187,7 @@ int main(int argc, char **argv){
     initialState.state = {init_pose.x, init_pose.y, init_pose.z, 0};
     ROS_INFO("\nx:%f\ny:%f\nz:%f\n", init_pose.x, init_pose.y, init_pose.z);
     finalState.state = {init_pose.x, init_pose.y + 5, init_pose.z, 0};
-    ok = solver.solveColloc(initialState, finalState);
+    ok = solver.solveColloc(initialState, finalState, Kalman);
     if(ok) solver.getSolutionColloc(sol_state, sol_control);
     for(int i = 0; i <  settings.phaseLength; ++i){
         dobot_interface.Send_Ctrl_Cmd(sol_control(0,i).scalar(), sol_control(1,i).scalar(), sol_control(2,i).scalar(), sol_control(3,i).scalar(), settings.time / (double)settings.phaseLength);
@@ -195,8 +198,8 @@ int main(int argc, char **argv){
 
 
     //vis
-    ros::Subscriber msg_sub = n.subscribe("vis_msg", 100, msgCallback);
-    ros::spin();
+    // ros::Subscriber msg_sub = n.subscribe("vis_msg", 100, msgCallback);
+    // ros::spin();
     
     return 0; 
 }
