@@ -199,6 +199,9 @@ int main(int argc, char **argv){
     // ros::spin();
 
     //KalmanFilter
+    KalmanFilter filter(settings.time / (double)settings.phaseLength);
+    filter.Predict(sol_control);
+    filter.Update(initialState.state);
     
     return 0; 
 }
