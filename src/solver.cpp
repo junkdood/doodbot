@@ -193,3 +193,10 @@ void DirectCollocationSolver::getSolutionColloc(DM& state, DM& control){
         }
     }
 }
+
+
+KalmanFilter::KalmanFilter(double dt){
+    A = DM::eye(4);
+    
+    H = DM::eye(4);
+}

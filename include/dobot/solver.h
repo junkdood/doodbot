@@ -28,22 +28,27 @@ private:
     enum SolverState{NOT_INITIALIZED=0, PROBLEM_SET, PROBLEM_SOLVED};
     SolverState solverState;
 
-    casadi::Opti opti;
+    Opti opti;
     std::unique_ptr<casadi::OptiSol> solution;
-    casadi::MX initialStateParameters, finalStateParameters, KalmanParameters;
-    casadi::MX X, A, V, T;
-    casadi::MX minJ0, maxJ0, minJ1, maxJ1, minJ2, maxJ2, minJ1subJ2, maxJ1subJ2, minV, maxV;
+    MX initialStateParameters, finalStateParameters, KalmanParameters;
+    MX X, A, V, T;
+    MX minJ0, maxJ0, minJ1, maxJ1, minJ2, maxJ2, minJ1subJ2, maxJ1subJ2, minV, maxV;
 };
 
 class KalmanFilter{
     public:
-    KalmanFilter();
+    KalmanFilter(double dt);
     ~KalmanFilter(){};
+
+
     private:
-    int x_evlt; //最终预测值
-    int x_pdct; //systemDynamics估计的值
-    int z_meas; //观测值(真值)
-    int pk; //估计与真值协方差
-    int pk_p; //预测与真值协方差
-    int k;
+    DM A;
+    DM B;
+    DM H;
+    DM x_evlt; //最终预测值
+    DM x_pdct; //systemDynamics估计的值
+    DM z_meas; //观测值(真值)
+    DM pk; //估计与真值协方差
+    DM pk_p; //预测与真值协方差
+    DM k;
 };
