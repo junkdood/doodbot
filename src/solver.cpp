@@ -17,7 +17,6 @@ DirectCollocationSolver::DirectCollocationSolver(const arm_model& _model, const 
     T = opti.parameter();
     initialStateParameters = opti.parameter(4);
     finalStateParameters = opti.parameter(4);
-    KalmanParameters = opti.parameter(4);
     opti.set_value(minJ0, _constraint.j0_min);
     opti.set_value(maxJ0, _constraint.j0_max);
     opti.set_value(minJ1, _constraint.j1_min);
@@ -33,7 +32,6 @@ DirectCollocationSolver::DirectCollocationSolver(const arm_model& _model, const 
 Function DirectCollocationSolver::getSystemDynamics(){
     MX X = MX::sym("x", 4); //状态
     MX V = MX::sym("v", 4); //控制量
-    MX KF = MX::sym("kf", 4); //卡尔曼滤波器修正
     MX dt = MX::sym("dt");
     MX A(4, 1); //状态的导数(就是速度)
 
@@ -48,12 +46,7 @@ Function DirectCollocationSolver::getSystemDynamics(){
     A(2) = -model.l1*sin(J(1))*V(1) - model.l2*cos(J(2))*V(2);
     A(3) = V(3);
 
-    A(0) = A(0) + KF(0);
-    A(1) = A(1) + KF(1);
-    A(2) = A(2) + KF(2);
-    A(3) = A(3) + KF(3);
-
-    return Function("dynamics", {X, V, KF, dt}, {A});
+    return Function("dynamics", {X, V, dt}, {A});
 }
 void DirectCollocationSolver::setOptColloc(){
     casadi_int phaseLength = static_cast<casadi_int> (settings.phaseLength);
@@ -72,9 +65,9 @@ void DirectCollocationSolver::setOptColloc(){
     costWeights w = settings._costWeights;
     for(casadi_int k = 0; k < N; ++k){
         if(k % 2 == 0 && k + 2 <= N){
-            f_curr = MX::vertcat(systemDynamics({X(Slice(), k), V(Slice(), k), KalmanParameters, dT}));
-            f_next = MX::vertcat(systemDynamics({X(Slice(), k + 2), V(Slice(), k + 2), KalmanParameters, dT}));
-            f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), KalmanParameters, dT}));
+            f_curr = MX::vertcat(systemDynamics({X(Slice(), k), V(Slice(), k), dT}));
+            f_next = MX::vertcat(systemDynamics({X(Slice(), k + 2), V(Slice(), k + 2), dT}));
+            f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), dT}));
             opti.subject_to(X(Slice(), k + 2) == X(Slice(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
             costFunction += w.control * dT / 6 * ( ((pow(V(0,k),2)+pow(V(1,k),2)+pow(V(2,k),2)+pow(V(3,k),2))/4) + 4 * ((pow(V(0,k+1),2)+pow(V(1,k+1),2)+pow(V(2,k+1),2)+pow(V(3,k+1),2))/4) + ((pow(V(0,k+2),2)+pow(V(1,k+2),2)+pow(V(2,k+2),2)+pow(V(3,k+2),2))/4));
@@ -132,18 +125,17 @@ bool DirectCollocationSolver::setupProblemColloc(const Settings& _settings){
     return true;
 }
 
-void DirectCollocationSolver::setParametersValue(const State& initialState, const State& finalState, const State& Kalman){
+void DirectCollocationSolver::setParametersValue(const State& initialState, const State& finalState){
     opti.set_value(initialStateParameters, initialState.state);
     opti.set_value(finalStateParameters, finalState.state);
-    opti.set_value(KalmanParameters, Kalman.state);
 }
 
-bool DirectCollocationSolver::solveColloc(const State& initialState, const State& finalState, const State& Kalman){
+bool DirectCollocationSolver::solveColloc(const State& initialState, const State& finalState){
     if(solverState == SolverState::NOT_INITIALIZED){
         throw std::runtime_error("problem not initialized");
         return false;
     }
-    setParametersValue(initialState, finalState, Kalman);
+    setParametersValue(initialState, finalState);
     casadi_int npoints = 2 * static_cast<casadi_int> (settings.phaseLength);
     DM initPos = DM::zeros(4,1);
     DM finalPos = DM::zeros(4,1);
@@ -196,7 +188,44 @@ void DirectCollocationSolver::getSolutionColloc(DM& state, DM& control){
 
 
 KalmanFilter::KalmanFilter(double dt){
+    //状态方程的状态转移，因为比较简单，没有速度，直接转移
     A = DM::eye(4);
-    
+
+    //状态方程的控制量影响，就是速度
+    B = DM::zeros(4, 4);
+    B(0, 0) = dt;
+    B(1, 1) = dt;
+    B(2, 2) = dt;
+    B(3, 3) = dt;
+
+    //测量变换矩阵，即角度转xyz
     H = DM::eye(4);
+
+    //模型噪声协方差，未自适应
+    Q = DM::zeros(4, 4);
+    Q(3, 3) = 0.01;
+
+    //观测噪声协方差
+    R = DM::zeros(4, 4);
+
+    //初始置零
+    x_cal_pre = DM::zeros(4);
+    pk_pre = DM::zeros(4, 4);
+    pk_p = DM::zeros(4, 4);
+}
+
+void KalmanFilter::Predict(DM control){
+    x_pred = mtimes(A,x_cal_pre) + mtimes(B, control);
+    pk_p = mtimes(mtimes(A,pk_pre),A.T()) + Q;
+}
+
+void KalmanFilter::Update(DM y_meas){
+    DM tmp = mtimes(mtimes(H,pk_p),H.T()) + R;
+    DM k = mtimes(mtimes(pk_p,H.T()),inv(tmp));
+    x_cal_pre = x_pred + mtimes(k, (y_meas - mtimes(H, x_pred)));
+    pk_pre = mtimes((DM::eye(4) - mtimes(k, H)), pk_p);
+} 
+
+DM KalmanFilter::GetCal(){
+    return x_cal_pre;
 }
