@@ -189,10 +189,12 @@ void DirectCollocationSolver::getSolutionColloc(DM& state, DM& control){
 
 KalmanFilter::KalmanFilter(const arm_model& _model, double dt){
     model = _model;
-    systemDynamics = getSystemDynamics();
     dT = dt;
     //模型噪声协方差，未自适应
     Q = DM::zeros(4, 4);
+    Q(0, 0) = 0.01;
+    Q(1, 1) = 0.01;
+    Q(2, 2) = 0.01;
     Q(3, 3) = 0.01;
 
     //观测噪声协方差
@@ -208,17 +210,6 @@ void KalmanFilter::reset(DM X){
     x_cal_pre = X;
     pk_pre = DM::zeros(4, 4);
     pk_p = DM::zeros(4, 4);
-}
-
-Function KalmanFilter::getSystemDynamics(){
-    MX X = MX::sym("x", 4); //状态
-    MX V = MX::sym("v", 4); //控制量
-    MX dt = MX::sym("dt");
-    MX A(4, 1); //状态的导数(就是速度)
-
-    
-
-    return Function("dynamics", {X, V, dt}, {A});
 }
 
 DM KalmanFilter::g(DM X, DM V){

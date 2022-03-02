@@ -58,8 +58,6 @@ class KalmanFilter{
     private:
     //模型相关
     arm_model model;
-    Function systemDynamics;
-    Function getSystemDynamics();
     double dT;
 
     //Kalman相关

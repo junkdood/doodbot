@@ -216,9 +216,9 @@ int main(int argc, char **argv){
         
         pose = dobot_interface.Get_Pose();
         filter.Update({pose.x, pose.y, pose.z, 0});
-        DM X = filter.getCal();
         ROS_INFO("\nx:%f\ny:%f\nz:%f\n", pose.x, pose.y, pose.z);
-        ROS_INFO("\nFx:%f\nFy:%f\nFz:%f\n", X(0).scalar(), X(1).scalar(), X(2).scalar());
+        DM X = filter.getCal();
+        ROS_INFO("\nFx:%f\nFy:%f\nFz:%f\n", X(0).scalar() - pose.x, X(1).scalar() - pose.y, X(2).scalar() - pose.z);
         ros::Duration(0.1).sleep();
     }
     
