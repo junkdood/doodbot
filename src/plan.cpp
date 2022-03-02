@@ -202,6 +202,26 @@ int main(int argc, char **argv){
     KalmanFilter filter(model, settings.time / (double)settings.phaseLength);
     filter.Predict(sol_control);
     filter.Update(initialState.state);
+
+    Pose pose = dobot_interface.Get_Pose();
+    filter.reset({pose.x, pose.y, pose.z, 0});
+    finalState.state = {pose.x + 5, pose.y + 15, pose.z, 0};
+    while(ros::ok){
+        initialState.state = filter.getCal();
+        ok = solver.solveColloc(initialState, finalState);
+        if(ok) solver.getSolutionColloc(sol_state, sol_control);
+
+        filter.Predict(sol_control(Slice(),0));
+        dobot_interface.Send_Ctrl_Cmd(sol_control(0,0).scalar(), sol_control(1,0).scalar(), sol_control(2,0).scalar(), sol_control(3,0).scalar(), settings.time / (double)settings.phaseLength);
+        
+        pose = dobot_interface.Get_Pose();
+        filter.Update({pose.x, pose.y, pose.z, 0});
+        DM X = filter.getCal();
+        ROS_INFO("\nx:%f\ny:%f\nz:%f\n", pose.x, pose.y, pose.z);
+        ROS_INFO("\nFx:%f\nFy:%f\nFz:%f\n", X(0).scalar(), X(1).scalar(), X(2).scalar());
+        ros::Duration(0.1).sleep();
+    }
+    
     
     return 0; 
 }

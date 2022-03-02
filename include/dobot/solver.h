@@ -40,14 +40,20 @@ class KalmanFilter{
     KalmanFilter(const arm_model& _model, double dt);
     ~KalmanFilter(){};
 
+    //初始化
     void reset(DM X);
-    void Predict(DM control);
-    DM Update(DM y_meas);
 
-    MX g(MX X, MX V);
-    MX Jg(MX X, MX V);
-    MX h(MX X);
-    MX Jh(MX X);
+    //KF核心过程
+    void Predict(DM control);
+    void Update(DM y_meas);
+
+    //获取预测
+    DM getCal();
+
+    DM g(DM X, DM V);
+    DM Jg(DM X, DM V);
+    DM h(DM X);
+    DM Jh(DM X);
 
     private:
     //模型相关
@@ -57,11 +63,11 @@ class KalmanFilter{
     double dT;
 
     //Kalman相关
-    MX Q;
-    MX R;
-    MX x_cal_pre; //上一个最终预测值
-    MX pk_pre; //上一个pk，即估计与真值协方差
-    MX pk_p; //预测与真值协方差
+    DM Q;
+    DM R;
+    DM x_cal_pre; //上一个最终预测值
+    DM pk_pre; //上一个pk，即估计与真值协方差
+    DM pk_p; //预测与真值协方差
 
-    MX x_pred; //systemDynamics估计的值
+    DM x_pred; //systemDynamics估计的值
 };

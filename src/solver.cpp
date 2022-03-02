@@ -192,22 +192,22 @@ KalmanFilter::KalmanFilter(const arm_model& _model, double dt){
     systemDynamics = getSystemDynamics();
     dT = dt;
     //模型噪声协方差，未自适应
-    Q = MX::zeros(4, 4);
+    Q = DM::zeros(4, 4);
     Q(3, 3) = 0.01;
 
     //观测噪声协方差
-    R = MX::zeros(4, 4);
+    R = DM::zeros(4, 4);
 
     //初始置零
-    x_cal_pre = MX::zeros(4);
-    pk_pre = MX::zeros(4, 4);
-    pk_p = MX::zeros(4, 4);
+    x_cal_pre = DM::zeros(4);
+    pk_pre = DM::zeros(4, 4);
+    pk_p = DM::zeros(4, 4);
 }
 
 void KalmanFilter::reset(DM X){
     x_cal_pre = X;
-    pk_pre = MX::zeros(4, 4);
-    pk_p = MX::zeros(4, 4);
+    pk_pre = DM::zeros(4, 4);
+    pk_p = DM::zeros(4, 4);
 }
 
 Function KalmanFilter::getSystemDynamics(){
@@ -216,7 +216,15 @@ Function KalmanFilter::getSystemDynamics(){
     MX dt = MX::sym("dt");
     MX A(4, 1); //状态的导数(就是速度)
 
-    MX J(4, 1);
+    
+
+    return Function("dynamics", {X, V, dt}, {A});
+}
+
+DM KalmanFilter::g(DM X, DM V){
+    DM J(4, 1);
+    DM A(4, 1);
+
     J(0) = asin(X(1)/sqrt(pow(X(0),2) + pow(X(1),2)));
     J(1) = acos(X(2)/sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2))) - acos(((pow(X(0),2) + pow(X(1),2) + pow(X(2),2)) + pow(model.l1,2) - pow(model.l2,2))/(2*model.l1*sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2))));
     J(2) = acos(((pow(X(0),2) + pow(X(1),2) + pow(X(2),2)) + pow(model.l2,2) - pow(model.l1,2))/(2*model.l2*sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2)))) - asin(X(2)/sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2)));
@@ -227,19 +235,15 @@ Function KalmanFilter::getSystemDynamics(){
     A(2) = -model.l1*sin(J(1))*V(1) - model.l2*cos(J(2))*V(2);
     A(3) = V(3);
 
-    return Function("dynamics", {X, V, dt}, {A});
+    return X + A * dT;
 }
 
-MX KalmanFilter::g(MX X, MX V){
-    return X + MX::vertcat(systemDynamics({X, V, dT})) * dT;
-}
-
-MX KalmanFilter::Jg(MX X, MX V){
+DM KalmanFilter::Jg(DM X, DM V){
     double eps = 0.001;
-    MX A = MX::zeros(4, 4);
+    DM A = DM::zeros(4, 4);
 
-    MX temp = g(X, V);
-    MX newX = X;
+    DM temp = g(X, V);
+    DM newX = X;
     for(int i = 0; i < 4; i++){
         for(int j = 0; j < 4; j++){
             newX = X;
@@ -250,26 +254,29 @@ MX KalmanFilter::Jg(MX X, MX V){
     return A;
 }
 
-MX KalmanFilter::h(MX X){
+DM KalmanFilter::h(DM X){
     return X;
 }
 
-MX KalmanFilter::Jh(MX X){
-    return MX::eye(4);
+DM KalmanFilter::Jh(DM X){
+    return DM::eye(4);
 }
 
 void KalmanFilter::Predict(DM control){
     x_pred = g(x_cal_pre, control);
-    MX J_g = Jg(x_cal_pre, control);
+    DM J_g = Jg(x_cal_pre, control);
     pk_p = mtimes(mtimes(J_g,pk_pre),J_g.T()) + Q;
 }
 
-DM KalmanFilter::Update(DM y_meas){
-    MX J_h = Jh(x_pred);
-    MX tmp = mtimes(mtimes(J_h,pk_p),J_h.T()) + R;
-    MX k = mtimes(mtimes(pk_p,J_h.T()),inv(tmp));
+void KalmanFilter::Update(DM y_meas){
+    DM J_h = Jh(x_pred);
+    DM tmp = mtimes(mtimes(J_h,pk_p),J_h.T()) + R;
+    DM k = mtimes(mtimes(pk_p,J_h.T()),inv(tmp));
     x_cal_pre = x_pred + mtimes(k, (y_meas - h(x_pred)));
-    pk_pre = mtimes((MX::eye(4) - mtimes(k, J_h)), pk_p);
-
-    return evalf(x_cal_pre);
+    pk_pre = mtimes((DM::eye(4) - mtimes(k, J_h)), pk_p);
 } 
+
+
+DM KalmanFilter::getCal(){
+    return h(x_cal_pre);
+}
