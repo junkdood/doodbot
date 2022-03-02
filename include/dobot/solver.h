@@ -37,22 +37,31 @@ private:
 
 class KalmanFilter{
     public:
-    KalmanFilter(double dt);
+    KalmanFilter(const arm_model& _model, double dt);
     ~KalmanFilter(){};
 
+    void reset(DM X);
     void Predict(DM control);
-    void Update(DM y_meas);
-    DM GetCal();
+    DM Update(DM y_meas);
+
+    MX g(MX X, MX V);
+    MX Jg(MX X, MX V);
+    MX h(MX X);
+    MX Jh(MX X);
 
     private:
-    DM A;
-    DM B;
-    DM H;
-    DM Q;
-    DM R;
-    DM x_cal_pre; //上一个最终预测值
-    DM pk_pre; //上一个pk，即估计与真值协方差
-    DM pk_p; //预测与真值协方差
+    //模型相关
+    arm_model model;
+    Function systemDynamics;
+    Function getSystemDynamics();
+    double dT;
 
-    DM x_pred; //systemDynamics估计的值
+    //Kalman相关
+    MX Q;
+    MX R;
+    MX x_cal_pre; //上一个最终预测值
+    MX pk_pre; //上一个pk，即估计与真值协方差
+    MX pk_p; //预测与真值协方差
+
+    MX x_pred; //systemDynamics估计的值
 };

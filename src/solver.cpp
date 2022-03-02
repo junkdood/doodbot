@@ -187,45 +187,89 @@ void DirectCollocationSolver::getSolutionColloc(DM& state, DM& control){
 }
 
 
-KalmanFilter::KalmanFilter(double dt){
-    //状态方程的状态转移，因为比较简单，没有速度，直接转移
-    A = DM::eye(4);
-
-    //状态方程的控制量影响，就是速度
-    B = DM::zeros(4, 4);
-    B(0, 0) = dt;
-    B(1, 1) = dt;
-    B(2, 2) = dt;
-    B(3, 3) = dt;
-
-    //测量变换矩阵，即角度转xyz
-    H = DM::eye(4);
-
+KalmanFilter::KalmanFilter(const arm_model& _model, double dt){
+    model = _model;
+    systemDynamics = getSystemDynamics();
+    dT = dt;
     //模型噪声协方差，未自适应
-    Q = DM::zeros(4, 4);
+    Q = MX::zeros(4, 4);
     Q(3, 3) = 0.01;
 
     //观测噪声协方差
-    R = DM::zeros(4, 4);
+    R = MX::zeros(4, 4);
 
     //初始置零
-    x_cal_pre = DM::zeros(4);
-    pk_pre = DM::zeros(4, 4);
-    pk_p = DM::zeros(4, 4);
+    x_cal_pre = MX::zeros(4);
+    pk_pre = MX::zeros(4, 4);
+    pk_p = MX::zeros(4, 4);
+}
+
+void KalmanFilter::reset(DM X){
+    x_cal_pre = X;
+    pk_pre = MX::zeros(4, 4);
+    pk_p = MX::zeros(4, 4);
+}
+
+Function KalmanFilter::getSystemDynamics(){
+    MX X = MX::sym("x", 4); //状态
+    MX V = MX::sym("v", 4); //控制量
+    MX dt = MX::sym("dt");
+    MX A(4, 1); //状态的导数(就是速度)
+
+    MX J(4, 1);
+    J(0) = asin(X(1)/sqrt(pow(X(0),2) + pow(X(1),2)));
+    J(1) = acos(X(2)/sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2))) - acos(((pow(X(0),2) + pow(X(1),2) + pow(X(2),2)) + pow(model.l1,2) - pow(model.l2,2))/(2*model.l1*sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2))));
+    J(2) = acos(((pow(X(0),2) + pow(X(1),2) + pow(X(2),2)) + pow(model.l2,2) - pow(model.l1,2))/(2*model.l2*sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2)))) - asin(X(2)/sqrt(pow(X(0),2) + pow(X(1),2) + pow(X(2),2)));
+    J(3) = X(3);
+
+    A(0) = -X(1)*V(0) + model.l1*cos(J(0))*cos(J(1))*V(1) - model.l2*cos(J(0))*sin(J(2))*V(2);
+    A(1) = X(0)*V(0) + model.l1*sin(J(0))*cos(J(1))*V(1) - model.l2*sin(J(0))*sin(J(2))*V(2);
+    A(2) = -model.l1*sin(J(1))*V(1) - model.l2*cos(J(2))*V(2);
+    A(3) = V(3);
+
+    return Function("dynamics", {X, V, dt}, {A});
+}
+
+MX KalmanFilter::g(MX X, MX V){
+    return X + MX::vertcat(systemDynamics({X, V, dT})) * dT;
+}
+
+MX KalmanFilter::Jg(MX X, MX V){
+    double eps = 0.001;
+    MX A = MX::zeros(4, 4);
+
+    MX temp = g(X, V);
+    MX newX = X;
+    for(int i = 0; i < 4; i++){
+        for(int j = 0; j < 4; j++){
+            newX = X;
+            newX(j)+=eps;
+            A(i,j) = (g(newX, V) - temp)(i) / eps;//Xi 对 Xj的偏导
+        }
+    }
+    return A;
+}
+
+MX KalmanFilter::h(MX X){
+    return X;
+}
+
+MX KalmanFilter::Jh(MX X){
+    return MX::eye(4);
 }
 
 void KalmanFilter::Predict(DM control){
-    x_pred = mtimes(A,x_cal_pre) + mtimes(B, control);
-    pk_p = mtimes(mtimes(A,pk_pre),A.T()) + Q;
+    x_pred = g(x_cal_pre, control);
+    MX J_g = Jg(x_cal_pre, control);
+    pk_p = mtimes(mtimes(J_g,pk_pre),J_g.T()) + Q;
 }
 
-void KalmanFilter::Update(DM y_meas){
-    DM tmp = mtimes(mtimes(H,pk_p),H.T()) + R;
-    DM k = mtimes(mtimes(pk_p,H.T()),inv(tmp));
-    x_cal_pre = x_pred + mtimes(k, (y_meas - mtimes(H, x_pred)));
-    pk_pre = mtimes((DM::eye(4) - mtimes(k, H)), pk_p);
+DM KalmanFilter::Update(DM y_meas){
+    MX J_h = Jh(x_pred);
+    MX tmp = mtimes(mtimes(J_h,pk_p),J_h.T()) + R;
+    MX k = mtimes(mtimes(pk_p,J_h.T()),inv(tmp));
+    x_cal_pre = x_pred + mtimes(k, (y_meas - h(x_pred)));
+    pk_pre = mtimes((MX::eye(4) - mtimes(k, J_h)), pk_p);
+
+    return evalf(x_cal_pre);
 } 
-
-DM KalmanFilter::GetCal(){
-    return x_cal_pre;
-}
