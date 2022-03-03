@@ -5,6 +5,7 @@
 #include<bits/stdc++.h>
 #include <unistd.h>
 
+double generateGaussianNoise(double mu, double sigma);
 
 enum joint_set{IDLE, Joint1_p, Joint1_n, Joint2_p, Joint2_n, Joint3_p, Joint3_n, Joint4_p, Joint4_n};
 

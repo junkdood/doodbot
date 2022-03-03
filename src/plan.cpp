@@ -206,6 +206,12 @@ int main(int argc, char **argv){
     Pose pose = dobot_interface.Get_Pose();
     filter.reset({pose.x, pose.y, pose.z, 0});
     finalState.state = {pose.x + 5, pose.y + 15, pose.z, 0};
+
+    float pre_x = pose.x;
+    float pre_y = pose.y;
+    float pre_z = pose.z;
+    DM pre_X = {pose.x, pose.y, pose.z, 0};
+
     while(ros::ok){
         initialState.state = filter.getCal();
         ok = solver.solveColloc(initialState, finalState);
@@ -216,9 +222,13 @@ int main(int argc, char **argv){
         
         pose = dobot_interface.Get_Pose();
         filter.Update({pose.x, pose.y, pose.z, 0});
-        ROS_INFO("\nx:%f\ny:%f\nz:%f\n", pose.x, pose.y, pose.z);
+        ROS_INFO("\ndx:%f\ndy:%f\ndz:%f\n", pose.x - pre_x, pose.y - pre_y, pose.z - pre_z);
+        pre_x = pose.x;
+        pre_y = pose.y;
+        pre_z = pose.z;
         DM X = filter.getCal();
-        ROS_INFO("\nFx:%f\nFy:%f\nFz:%f\n", X(0).scalar() - pose.x, X(1).scalar() - pose.y, X(2).scalar() - pose.z);
+        ROS_INFO("\nKFdx:%f\nKFdy:%f\nKFdz:%f\n", X(0).scalar() - pre_X(0).scalar(), X(1).scalar() - pre_X(1).scalar(), X(2).scalar() - pre_X(2).scalar());
+        pre_X = X;
         ros::Duration(0.1).sleep();
     }
     

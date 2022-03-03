@@ -192,13 +192,17 @@ KalmanFilter::KalmanFilter(const arm_model& _model, double dt){
     dT = dt;
     //模型噪声协方差，未自适应
     Q = DM::zeros(4, 4);
-    Q(0, 0) = 0.01;
-    Q(1, 1) = 0.01;
-    Q(2, 2) = 0.01;
-    Q(3, 3) = 0.01;
+    Q(0, 0) = 0.1;
+    Q(1, 1) = 0.1;
+    Q(2, 2) = 0.1;
+    Q(3, 3) = 0.1;
 
     //观测噪声协方差
     R = DM::zeros(4, 4);
+    R(0, 0) = 1;
+    R(1, 1) = 1;
+    R(2, 2) = 1;
+    R(3, 3) = 1;
 
     //初始置零
     x_cal_pre = DM::zeros(4);
