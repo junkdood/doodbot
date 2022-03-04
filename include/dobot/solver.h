@@ -50,22 +50,35 @@ class KalmanFilter{
     //获取预测
     DM getCal();
 
+    //EKF的东西
     DM g(DM X, DM V);
     DM Jg(DM X, DM V);
     DM h(DM X);
     DM Jh(DM X);
+
+    //AEKF整合
+    DM AEKF_unity(DM control, DM y_meas);
 
     private:
     //模型相关
     arm_model model;
     double dT;
 
-    //Kalman相关
+    //Kalman相关，EKF与AEKF共用
     DM Q;
     DM R;
+
+    //EKF相关
     DM x_cal_pre; //上一个最终预测值
     DM pk_pre; //上一个pk，即估计与真值协方差
     DM pk_p; //预测与真值协方差
-
     DM x_pred; //systemDynamics估计的值
+
+    //Sage-Husa自适应(AEKF)相关
+    double b; //遗忘系数
+    int t; //次数
+    DM q; 
+    DM r;
+    DM X_AEKF;
+    DM P_AEKF;
 };

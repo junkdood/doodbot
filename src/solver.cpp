@@ -190,7 +190,12 @@ void DirectCollocationSolver::getSolutionColloc(DM& state, DM& control){
 KalmanFilter::KalmanFilter(const arm_model& _model, double dt){
     model = _model;
     dT = dt;
-    //模型噪声协方差，未自适应
+    reset(DM::zeros(4));
+    
+}
+
+void KalmanFilter::reset(DM X){
+    //模型噪声协方差，自适应后好像没用了
     Q = DM::zeros(4, 4);
     Q(0, 0) = 0.1;
     Q(1, 1) = 0.1;
@@ -204,16 +209,18 @@ KalmanFilter::KalmanFilter(const arm_model& _model, double dt){
     R(2, 2) = 1;
     R(3, 3) = 1;
 
-    //初始置零
-    x_cal_pre = DM::zeros(4);
-    pk_pre = DM::zeros(4, 4);
-    pk_p = DM::zeros(4, 4);
-}
-
-void KalmanFilter::reset(DM X){
+    //EKF初始置零
     x_cal_pre = X;
     pk_pre = DM::zeros(4, 4);
     pk_p = DM::zeros(4, 4);
+
+    //自适应参数初始化
+    b = 9.8;
+    t = 0;
+    q = DM::zeros(4);
+    r = DM::zeros(4);
+    X_AEKF = X;
+    P_AEKF = DM::zeros(4, 4);
 }
 
 DM KalmanFilter::g(DM X, DM V){
@@ -260,7 +267,7 @@ DM KalmanFilter::Jh(DM X){
 void KalmanFilter::Predict(DM control){
     x_pred = g(x_cal_pre, control);
     DM J_g = Jg(x_cal_pre, control);
-    pk_p = mtimes(mtimes(J_g,pk_pre),J_g.T()) + Q;
+    pk_p = mtimes(mtimes(J_g,pk_pre),J_g.T()) + Q;    
 }
 
 void KalmanFilter::Update(DM y_meas){
@@ -271,7 +278,26 @@ void KalmanFilter::Update(DM y_meas){
     pk_pre = mtimes((DM::eye(4) - mtimes(k, J_h)), pk_p);
 } 
 
-
 DM KalmanFilter::getCal(){
     return h(x_cal_pre);
+}
+
+DM KalmanFilter::AEKF_unity(DM control, DM y_meas){
+    double d = (1.0 - b)/(1.0 - pow(b, t + 1));
+    DM X_AEKF_notacc = g(X_AEKF, control);
+
+    X_AEKF = g(X_AEKF, control) + q;
+    DM J_g = Jg(X_AEKF, control);
+    P_AEKF = mtimes(mtimes(J_g,P_AEKF),J_g.T()) + Q;
+
+    DM J_h = Jh(X_AEKF);
+    DM tmp = mtimes(mtimes(J_h,P_AEKF),J_h.T()) + R;
+    DM k = mtimes(mtimes(P_AEKF,J_h.T()),inv(tmp));
+    DM epsilon = y_meas - h(X_AEKF) - r;
+    X_AEKF = X_AEKF + mtimes(k, (epsilon));
+    P_AEKF = mtimes((DM::eye(4) - mtimes(k, J_h)), P_AEKF);
+
+    //自适应参数更新
+    q = (1 - d)*q + d * (X_AEKF - X_AEKF_notacc);
+    Q = (1 - d)*Q + d * ();
 }
