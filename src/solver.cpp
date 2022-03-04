@@ -215,7 +215,7 @@ void KalmanFilter::reset(DM X){
     pk_p = DM::zeros(4, 4);
 
     //自适应参数初始化
-    b = 9.8;
+    b = 0.98;
     t = 0;
     q = DM::zeros(4);
     r = DM::zeros(4);
@@ -283,21 +283,31 @@ DM KalmanFilter::getCal(){
 }
 
 DM KalmanFilter::AEKF_unity(DM control, DM y_meas){
-    double d = (1.0 - b)/(1.0 - pow(b, t + 1));
-    DM X_AEKF_notacc = g(X_AEKF, control);
+    
 
-    X_AEKF = g(X_AEKF, control) + q;
+    DM X_AEKF_cache = g(X_AEKF, control);
+    X_AEKF = X_AEKF_cache + q;
     DM J_g = Jg(X_AEKF, control);
-    P_AEKF = mtimes(mtimes(J_g,P_AEKF),J_g.T()) + Q;
+    DM P_AEKF_cache = mtimes(mtimes(J_g,P_AEKF),J_g.T());
+    P_AEKF = P_AEKF_cache + Q;
 
     DM J_h = Jh(X_AEKF);
-    DM tmp = mtimes(mtimes(J_h,P_AEKF),J_h.T()) + R;
+    DM tmp_cache = mtimes(mtimes(J_h,P_AEKF),J_h.T());
+    DM tmp = tmp_cache + R;
     DM k = mtimes(mtimes(P_AEKF,J_h.T()),inv(tmp));
-    DM epsilon = y_meas - h(X_AEKF) - r;
-    X_AEKF = X_AEKF + mtimes(k, (epsilon));
+    DM epsilon_cache = y_meas - h(X_AEKF);
+    DM epsilon = epsilon_cache - r;
+    X_AEKF = X_AEKF + mtimes(k, epsilon);
     P_AEKF = mtimes((DM::eye(4) - mtimes(k, J_h)), P_AEKF);
 
     //自适应参数更新
-    q = (1 - d)*q + d * (X_AEKF - X_AEKF_notacc);
-    Q = (1 - d)*Q + d * ();
+    double d = (1.0 - b)/(1.0 - pow(b, t + 1));
+    q = (1 - d)*q + d * (X_AEKF - X_AEKF_cache);
+    Q = (1 - d)*Q + d * (mtimes(mtimes(mtimes(k, epsilon), epsilon.T()), k.T()) + P_AEKF - P_AEKF_cache);
+    r = (1 - d)*r + d * epsilon_cache;
+    R = (1 - d)*R + d * (mtimes(epsilon, epsilon.T()) + P_AEKF - tmp_cache);
+    t++;
+    std::cout<<R.get_str()<<std::endl;
+
+    return h(X_AEKF);
 }

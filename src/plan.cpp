@@ -199,36 +199,71 @@ int main(int argc, char **argv){
     // ros::spin();
 
     //KalmanFilter
+    // KalmanFilter filter(model, settings.time / (double)settings.phaseLength);
+    // filter.Predict(sol_control);
+    // filter.Update(initialState.state);
+
+    // Pose pose = dobot_interface.Get_Pose();
+    // filter.reset({pose.x, pose.y, pose.z, 0});
+    // finalState.state = {pose.x + 5, pose.y + 15, pose.z, 0};
+
+    // float pre_x = pose.x;
+    // float pre_y = pose.y;
+    // float pre_z = pose.z;
+    // DM pre_X = {pose.x, pose.y, pose.z, 0};
+
+    // while(ros::ok){
+    //     initialState.state = filter.getCal();
+    //     ok = solver.solveColloc(initialState, finalState);
+    //     if(ok) solver.getSolutionColloc(sol_state, sol_control);
+
+    //     filter.Predict(sol_control(Slice(),0));
+    //     dobot_interface.Send_Ctrl_Cmd(sol_control(0,0).scalar(), sol_control(1,0).scalar(), sol_control(2,0).scalar(), sol_control(3,0).scalar(), settings.time / (double)settings.phaseLength);
+        
+    //     pose = dobot_interface.Get_Pose();
+    //     filter.Update({pose.x, pose.y, pose.z, 0});
+    //     ROS_INFO("\ndx:%f\ndy:%f\ndz:%f\n", pose.x - pre_x, pose.y - pre_y, pose.z - pre_z);
+    //     pre_x = pose.x;
+    //     pre_y = pose.y;
+    //     pre_z = pose.z;
+    //     DM X = filter.getCal();
+    //     ROS_INFO("\nKFdx:%f\nKFdy:%f\nKFdz:%f\n", X(0).scalar() - pre_X(0).scalar(), X(1).scalar() - pre_X(1).scalar(), X(2).scalar() - pre_X(2).scalar());
+    //     pre_X = X;
+    //     ros::Duration(0.1).sleep();
+    // }
+
+
+    //AEKF
     KalmanFilter filter(model, settings.time / (double)settings.phaseLength);
-    filter.Predict(sol_control);
-    filter.Update(initialState.state);
 
     Pose pose = dobot_interface.Get_Pose();
     filter.reset({pose.x, pose.y, pose.z, 0});
+    initialState.state = {pose.x, pose.y, pose.z, 0};
     finalState.state = {pose.x + 5, pose.y + 15, pose.z, 0};
 
     float pre_x = pose.x;
     float pre_y = pose.y;
     float pre_z = pose.z;
     DM pre_X = {pose.x, pose.y, pose.z, 0};
-
     while(ros::ok){
-        initialState.state = filter.getCal();
         ok = solver.solveColloc(initialState, finalState);
         if(ok) solver.getSolutionColloc(sol_state, sol_control);
 
-        filter.Predict(sol_control(Slice(),0));
-        dobot_interface.Send_Ctrl_Cmd(sol_control(0,0).scalar(), sol_control(1,0).scalar(), sol_control(2,0).scalar(), sol_control(3,0).scalar(), settings.time / (double)settings.phaseLength);
+        dobot_interface.Send_Ctrl_Cmd(sol_control(0,0).scalar(), sol_control(1,0).scalar(), sol_control(2,0).scalar(), sol_control(3,0).scalar(), settings.time / (double)settings.phaseLength);   
         
         pose = dobot_interface.Get_Pose();
-        filter.Update({pose.x, pose.y, pose.z, 0});
+
+        DM X = filter.AEKF_unity(sol_control(Slice(),0), {pose.x, pose.y, pose.z, 0});
+
+
         ROS_INFO("\ndx:%f\ndy:%f\ndz:%f\n", pose.x - pre_x, pose.y - pre_y, pose.z - pre_z);
         pre_x = pose.x;
         pre_y = pose.y;
         pre_z = pose.z;
-        DM X = filter.getCal();
         ROS_INFO("\nKFdx:%f\nKFdy:%f\nKFdz:%f\n", X(0).scalar() - pre_X(0).scalar(), X(1).scalar() - pre_X(1).scalar(), X(2).scalar() - pre_X(2).scalar());
         pre_X = X;
+
+        initialState.state = X;
         ros::Duration(0.1).sleep();
     }
     
