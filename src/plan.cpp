@@ -254,8 +254,6 @@ int main(int argc, char **argv){
         pose = dobot_interface.Get_Pose();
 
         DM X = filter.AEKF_unity(sol_control(Slice(),0), {pose.x, pose.y, pose.z, 0});
-
-
         ROS_INFO("\ndx:%f\ndy:%f\ndz:%f\n", pose.x - pre_x, pose.y - pre_y, pose.z - pre_z);
         pre_x = pose.x;
         pre_y = pose.y;

@@ -193,9 +193,9 @@ Pose Simulator_Interface::Get_Pose(){
     pose.jointAngle[2] = _sim_jointAngle[2];
     pose.jointAngle[3] = _sim_jointAngle[3];
 
-    pose.x += generateGaussianNoise(0,sqrt(1));
-    pose.y += generateGaussianNoise(0,sqrt(1));
-    pose.z += generateGaussianNoise(0,sqrt(1));
+    pose.x += generateGaussianNoise(0,sqrt(0.1));
+    pose.y += generateGaussianNoise(0,sqrt(0.1));
+    pose.z += generateGaussianNoise(0,sqrt(0.1));
     return pose;
 }
 
