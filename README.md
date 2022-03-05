@@ -1,11 +1,25 @@
 # dobot_magician
 
+### 编译
+假设已经有ros环境和casadi环境（casadi下面有安装步骤）
+```sh
+mkdir -p ~/dobot_ws/src && cd ~/dobot_ws/src
+git clone https://github.com/junkdood/dobot_package.git
+cd ..
+catkin_make
+```
+
 ### 运行
+运行先需要source一下环境
+```sh
+cd ~/dobot_ws
+source devel/setup.bash
+```
+
 归零
 ```sh
 roslaunch dobot sethome.launch
 ```
-
 
 直接键盘控制
 ```sh
