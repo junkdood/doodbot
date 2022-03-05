@@ -70,7 +70,7 @@ void DirectCollocationSolver::setOptColloc(){
             f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), dT}));
             opti.subject_to(X(Slice(), k + 2) == X(Slice(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
-            costFunction += w.control * dT / 6 * ( ((pow(V(0,k),2)+pow(V(1,k),2)+pow(V(2,k),2)+pow(V(3,k),2))/4) + 4 * ((pow(V(0,k+1),2)+pow(V(1,k+1),2)+pow(V(2,k+1),2)+pow(V(3,k+1),2))/4) + ((pow(V(0,k+2),2)+pow(V(1,k+2),2)+pow(V(2,k+2),2)+pow(V(3,k+2),2))/4));
+            costFunction += w.control * dT / 6 * ( (mtimes(V(Slice(),k).T(),V(Slice(),k))/4) + 4 * (mtimes(V(Slice(),k+1).T(),V(Slice(),k+1))/4) + (mtimes(V(Slice(),k+2).T(),V(Slice(),k+2))/4));
         }
         else if(k % 2 != 0){
             opti.subject_to(X(Slice(), k) == 0.5 * (X(Slice(), k - 1) + X(Slice(), k + 1)) + dT * (f_curr - f_next) / 8);

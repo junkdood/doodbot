@@ -167,6 +167,8 @@ int main(int argc, char **argv){
     DM sol_state, sol_control;
     if(ok) solver.getSolutionColloc(sol_state, sol_control);
 
+    // std::cout<<"collocation\n";
+    // std::cout << "state:\n" << sol_state << "\ncontrol:\n" << sol_control << std::endl;
     //发送控制
     for(int i = 0; i <  settings.phaseLength; ++i){
         dobot_interface.Send_Ctrl_Cmd(sol_control(0,i).scalar(), sol_control(1,i).scalar(), sol_control(2,i).scalar(), sol_control(3,i).scalar(), settings.time / (double)settings.phaseLength);
