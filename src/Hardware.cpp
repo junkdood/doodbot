@@ -1,8 +1,5 @@
 #include "dobot/Hardware.h"
 
-
-
-
 void Interface::xyz_to_jointAngle(float x, float y, float z, float r, float jointAngle[4]){
     double R_2 = x*x + y*y;
     double d_2 = R_2 + z*z;
@@ -26,9 +23,7 @@ void Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float
 
 
 
-
-
-
+//#############################################################################
 
 Hardware_Interface::Hardware_Interface(char* port, unsigned int timeout){
     int result = ConnectDobot(port, 115200, 0, 0);
