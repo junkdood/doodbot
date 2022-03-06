@@ -204,10 +204,10 @@ void KalmanFilter::reset(DM X){
 
     //观测噪声协方差
     R = DM::zeros(4, 4);
-    R(0, 0) = 0.001;
-    R(1, 1) = 0.001;
-    R(2, 2) = 0.001;
-    R(3, 3) = 0.001;
+    // R(0, 0) = 0.0001;
+    // R(1, 1) = 0.0001;
+    // R(2, 2) = 0.0001;
+    // R(3, 3) = 0.0001;
 
     //EKF初始置零
     x_cal_pre = X;
@@ -305,9 +305,9 @@ DM KalmanFilter::AEKF_unity(DM control, DM y_meas){
     q = (1 - d)*q + d * (X_AEKF - X_AEKF_cache);
     Q = (1 - d)*Q + d * (mtimes(mtimes(mtimes(k, epsilon), epsilon.T()), k.T()) + P_AEKF - P_AEKF_cache);
     r = (1 - d)*r + d * epsilon_cache;
-    // R = (1 - d)*R + d * (mtimes(mtimes(mtimes((DM::eye(4) - mtimes(k, J_h)), epsilon), epsilon.T()), (DM::eye(4) - mtimes(k, J_h)).T()) + tmp_cache);
+    R = (1 - d)*R + d * (mtimes(mtimes(mtimes((DM::eye(4) - mtimes(k, J_h)), epsilon), epsilon.T()), (DM::eye(4) - mtimes(k, J_h)).T()) + tmp_cache);
     t++;
-    // std::cout<<R.get_str()<<std::endl;
+    std::cout<<R.get_str()<<std::endl;
 
     return h(X_AEKF);
 }

@@ -23,9 +23,9 @@ class Hardware_Interface{
     void Send_Ctrl_Cmd(uint32_t duration, joint_set target_joint);
     void Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, double dt);
 
-    void xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]);
+    void xyz_to_jointAngle(float x, float y, float z, float r, float jointAngle[4]);
 
-    void jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z);
+    void jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z, float &r);
 
     
     const double _RPD=acos(-1)/180;
@@ -47,14 +47,14 @@ class Hardware_Interface{
 
 class Simulator_Interface{
     public:
-    Simulator_Interface(float x = 75, float y = 0, float z = 0);
+    Simulator_Interface(float x = 75, float y = 0, float z = 0, float r = 0);
     ~Simulator_Interface();
 
     void Set_Home();
     Pose Get_Pose();
     void Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, double dt);
-    void xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]);
-    void jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z);
+    void xyz_to_jointAngle(float x, float y, float z, float r, float jointAngle[4]);
+    void jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z, float &r);
 
     
     const double _RPD=acos(-1)/180;

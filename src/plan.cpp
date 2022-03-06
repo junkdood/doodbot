@@ -154,11 +154,11 @@ int main(int argc, char **argv){
     State initialState, finalState, Kalman;
     //设置开始状态，读取xyz坐标
     Pose init_pose = dobot_interface.Get_Pose();
-    initialState.state = {init_pose.x, init_pose.y, init_pose.z, 0};
-    ROS_INFO("\nx:%f\ny:%f\nz:%f\n", init_pose.x, init_pose.y, init_pose.z);
+    initialState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
+    ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\n", init_pose.x, init_pose.y, init_pose.z, init_pose.r);
 
     //设置目标点
-    finalState.state = {init_pose.x + 5, init_pose.y, init_pose.z, 0};
+    finalState.state = {init_pose.x + 5, init_pose.y, init_pose.z, init_pose.r};
 
     //求解
     bool ok = solver.solveColloc(initialState, finalState);
@@ -177,15 +177,15 @@ int main(int argc, char **argv){
     //检查最后是否到达
     ros::Duration(1.0).sleep();
     Pose final_pose = dobot_interface.Get_Pose();
-    ROS_INFO("\nx:%f\ny:%f\nz:%f\n", final_pose.x, final_pose.y, final_pose.z);
+    ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\n", final_pose.x, final_pose.y, final_pose.z, final_pose.r);
 
 
     
     //再规划一次
     init_pose = dobot_interface.Get_Pose();
-    initialState.state = {init_pose.x, init_pose.y, init_pose.z, 0};
-    ROS_INFO("\nx:%f\ny:%f\nz:%f\n", init_pose.x, init_pose.y, init_pose.z);
-    finalState.state = {init_pose.x, init_pose.y + 5, init_pose.z, 0};
+    initialState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
+    ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\n", init_pose.x, init_pose.y, init_pose.z, init_pose.r);
+    finalState.state = {init_pose.x, init_pose.y + 5, init_pose.z, init_pose.r};
     ok = solver.solveColloc(initialState, finalState);
     if(ok) solver.getSolutionColloc(sol_state, sol_control);
     for(int i = 0; i <  settings.phaseLength; ++i){
@@ -193,12 +193,13 @@ int main(int argc, char **argv){
     }
     ros::Duration(1.0).sleep();
     final_pose = dobot_interface.Get_Pose();
-    ROS_INFO("\nx:%f\ny:%f\nz:%f\n", final_pose.x, final_pose.y, final_pose.z);
+    ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\n", final_pose.x, final_pose.y, final_pose.z, final_pose.r);
 
 
     //vis
     // ros::Subscriber msg_sub = n.subscribe("vis_msg", 100, msgCallback);
     // ros::spin();
+
 
     //KalmanFilter
     // KalmanFilter filter(model, settings.time / (double)settings.phaseLength);
@@ -239,14 +240,15 @@ int main(int argc, char **argv){
     KalmanFilter filter(model, settings.time / (double)settings.phaseLength);
 
     Pose pose = dobot_interface.Get_Pose();
-    filter.reset({pose.x, pose.y, pose.z, 0});
-    initialState.state = {pose.x, pose.y, pose.z, 0};
-    finalState.state = {pose.x + 5, pose.y + 15, pose.z, 0};
+    filter.reset({pose.x, pose.y, pose.z, pose.r});
+    initialState.state = {pose.x, pose.y, pose.z, pose.r};
+    finalState.state = {pose.x + 5, pose.y + 15, pose.z, pose.r};
 
     float pre_x = pose.x;
     float pre_y = pose.y;
     float pre_z = pose.z;
-    DM pre_X = {pose.x, pose.y, pose.z, 0};
+    float pre_r = pose.r;
+    DM pre_X = {pose.x, pose.y, pose.z, pose.r};
     while(ros::ok){
         ok = solver.solveColloc(initialState, finalState);
         if(ok) solver.getSolutionColloc(sol_state, sol_control);
@@ -255,12 +257,13 @@ int main(int argc, char **argv){
         
         pose = dobot_interface.Get_Pose();
 
-        DM X = filter.AEKF_unity(sol_control(Slice(),0), {pose.x, pose.y, pose.z, 0});
-        ROS_INFO("\ndx:%f\ndy:%f\ndz:%f\n", pose.x - pre_x, pose.y - pre_y, pose.z - pre_z);
+        DM X = filter.AEKF_unity(sol_control(Slice(),0), {pose.x, pose.y, pose.z, pose.r});
+        ROS_INFO("\ndx:%f\ndy:%f\ndz:%f\ndr:%f\n", pose.x - pre_x, pose.y - pre_y, pose.z - pre_z, pose.r - pre_r);
         pre_x = pose.x;
         pre_y = pose.y;
         pre_z = pose.z;
-        ROS_INFO("\nKFdx:%f\nKFdy:%f\nKFdz:%f\n", X(0).scalar() - pre_X(0).scalar(), X(1).scalar() - pre_X(1).scalar(), X(2).scalar() - pre_X(2).scalar());
+        pre_r = pose.r;
+        ROS_INFO("\nKFdx:%f\nKFdy:%f\nKFdz:%f\nFdr:%f\n", X(0).scalar() - pre_X(0).scalar(), X(1).scalar() - pre_X(1).scalar(), X(2).scalar() - pre_X(2).scalar(), X(3).scalar() - pre_X(3).scalar());
         pre_X = X;
 
         initialState.state = X;

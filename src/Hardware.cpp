@@ -43,6 +43,11 @@ Pose Hardware_Interface::Get_Pose(){
     if(GetPose(&pose)!=DobotCommunicate_NoError){
         throw "Communicate Failed";
     }
+    pose.r *= _RPD;
+    pose.jointAngle[0] *= _RPD;
+    pose.jointAngle[1] *= _RPD;
+    pose.jointAngle[2] *= _RPD;
+    pose.jointAngle[3] *= _RPD;
     return pose;
 }
 
@@ -134,27 +139,23 @@ void Hardware_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, d
 }
 
 
-void Hardware_Interface::xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]){
-    double r_2 = x*x + y*y;
-    double d_2 = r_2 + z*z;
+void Hardware_Interface::xyz_to_jointAngle(float x, float y, float z, float r, float jointAngle[4]){
+    double R_2 = x*x + y*y;
+    double d_2 = R_2 + z*z;
     double d = sqrt(d_2);
-    jointAngle[0]=asin(y/sqrt(r_2));
+    jointAngle[0]=asin(y/sqrt(R_2));
     jointAngle[1]=acos(z/d) - acos((d_2 + _l1_2 - _l2_2)/(2*_l1*d));
     jointAngle[2]=acos((d_2 + _l2_2 - _l1_2)/(2*_l2*d)) - asin(z/d);
-    jointAngle[0] = jointAngle[0]*_DPR;
-    jointAngle[1] = jointAngle[1]*_DPR;
-    jointAngle[2] = jointAngle[2]*_DPR;
+    jointAngle[3] = r;
     return;
 }
 
-void Hardware_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z){
-    double j0 = jointAngle[0]*_RPD;
-    double j1 = jointAngle[1]*_RPD;
-    double j2 = jointAngle[2]*_RPD;
-    double r = _l1*sin(j1) + _l2*cos(j2);
-    x = r*cos(j0);
-    y = r*sin(j0);
-    z = _l1*cos(j1) - _l2*sin(j2);
+void Hardware_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z, float &r){
+    double R = _l1*sin(jointAngle[1]) + _l2*cos(jointAngle[2]);
+    x = R*cos(jointAngle[0]);
+    y = R*sin(jointAngle[0]);
+    z = _l1*cos(jointAngle[1]) - _l2*sin(jointAngle[2]);
+    r = jointAngle[3];
     return;
 }
 
@@ -167,8 +168,8 @@ void Hardware_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float 
 
 
 
-Simulator_Interface::Simulator_Interface(float x, float y, float z){
-    xyz_to_jointAngle(x, y, z, _home_jointAngle);
+Simulator_Interface::Simulator_Interface(float x, float y, float z, float r){
+    xyz_to_jointAngle(x, y, z, r, _home_jointAngle);
     Set_Home();
     return;
 }
@@ -187,51 +188,48 @@ void Simulator_Interface::Set_Home(){
 
 Pose Simulator_Interface::Get_Pose(){
     Pose pose;
-    jointAngle_to_xyz(_sim_jointAngle, pose.x, pose.y, pose.z);
+    jointAngle_to_xyz(_sim_jointAngle, pose.x, pose.y, pose.z, pose.r);
     pose.jointAngle[0] = _sim_jointAngle[0];
     pose.jointAngle[1] = _sim_jointAngle[1];
     pose.jointAngle[2] = _sim_jointAngle[2];
     pose.jointAngle[3] = _sim_jointAngle[3];
 
-    pose.x += generateGaussianNoise(0,sqrt(0.001));
-    pose.y += generateGaussianNoise(0,sqrt(0.001));
-    pose.z += generateGaussianNoise(0,sqrt(0.001));
+    pose.x += generateGaussianNoise(0,sqrt(0.0001));
+    pose.y += generateGaussianNoise(0,sqrt(0.0001));
+    pose.z += generateGaussianNoise(0,sqrt(0.0001));
+    pose.r += generateGaussianNoise(0,sqrt(0.0001));
     return pose;
 }
 
 void Simulator_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, double dt){
-    _sim_jointAngle[0] += j0*dt*_DPR;
-    _sim_jointAngle[1] += j1*dt*_DPR;
-    _sim_jointAngle[2] += j2*dt*_DPR;
-    _sim_jointAngle[3] += j3*dt*_DPR;
+    _sim_jointAngle[0] += j0*dt;
+    _sim_jointAngle[1] += j1*dt;
+    _sim_jointAngle[2] += j2*dt;
+    _sim_jointAngle[3] += j3*dt;
 
-    _sim_jointAngle[0] += generateGaussianNoise(0,sqrt(0.001));
-    _sim_jointAngle[1] += generateGaussianNoise(0,sqrt(0.001));
-    _sim_jointAngle[2] += generateGaussianNoise(0,sqrt(0.001));
-    _sim_jointAngle[3] += generateGaussianNoise(0,sqrt(0.001));
+    _sim_jointAngle[0] += generateGaussianNoise(0,sqrt(0.00001));
+    _sim_jointAngle[1] += generateGaussianNoise(0,sqrt(0.00001));
+    _sim_jointAngle[2] += generateGaussianNoise(0,sqrt(0.00001));
+    _sim_jointAngle[3] += generateGaussianNoise(0,sqrt(0.00001));
 }
 
-void Simulator_Interface::xyz_to_jointAngle(float x, float y, float z, float jointAngle[4]){
-    double r_2 = x*x + y*y;
-    double d_2 = r_2 + z*z;
+void Simulator_Interface::xyz_to_jointAngle(float x, float y, float z, float r, float jointAngle[4]){
+    double R_2 = x*x + y*y;
+    double d_2 = R_2 + z*z;
     double d = sqrt(d_2);
-    jointAngle[0]=asin(y/sqrt(r_2));
+    jointAngle[0]=asin(y/sqrt(R_2));
     jointAngle[1]=acos(z/d) - acos((d_2 + _l1_2 - _l2_2)/(2*_l1*d));
     jointAngle[2]=acos((d_2 + _l2_2 - _l1_2)/(2*_l2*d)) - asin(z/d);
-    jointAngle[0] = jointAngle[0]*_DPR;
-    jointAngle[1] = jointAngle[1]*_DPR;
-    jointAngle[2] = jointAngle[2]*_DPR;
+    jointAngle[3] = r;
     return;
 }
 
-void Simulator_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z){
-    double j0 = jointAngle[0]*_RPD;
-    double j1 = jointAngle[1]*_RPD;
-    double j2 = jointAngle[2]*_RPD;
-    double r = _l1*sin(j1) + _l2*cos(j2);
-    x = r*cos(j0);
-    y = r*sin(j0);
-    z = _l1*cos(j1) - _l2*sin(j2);
+void Simulator_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z, float &r){
+    double R = _l1*sin(jointAngle[1]) + _l2*cos(jointAngle[2]);
+    x = R*cos(jointAngle[0]);
+    y = R*sin(jointAngle[0]);
+    z = _l1*cos(jointAngle[1]) - _l2*sin(jointAngle[2]);
+    r = jointAngle[3];
     return;
 }
 
