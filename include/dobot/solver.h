@@ -13,13 +13,13 @@ public:
     DirectCollocationSolver(const arm_model& _model, const constraint_value& _constraint);
     ~DirectCollocationSolver(){ };
     bool setupProblemColloc(const Settings& _settings);
-    bool solveColloc(const State& initialState, const State& finalState);
+    bool solveColloc(const State& initialState, const State& finalState, const State& AEKFq);
     void getSolutionColloc(DM& state, DM& control);
 private:
     Function systemDynamics;
     Function getSystemDynamics();
     void setOptColloc();
-    void setParametersValue(const State& initialState, const State& finalState);
+    void setParametersValue(const State& initialState, const State& finalState, const State& AEKFq);
 
 
     arm_model model;
@@ -30,7 +30,7 @@ private:
 
     Opti opti;
     std::unique_ptr<casadi::OptiSol> solution;
-    MX initialStateParameters, finalStateParameters;
+    MX initialStateParameters, finalStateParameters, AEKFqParameters;
     MX X, A, V, T;
     MX minJ0, maxJ0, minJ1, maxJ1, minJ2, maxJ2, minJ1subJ2, maxJ1subJ2, minV, maxV;
 };
@@ -49,6 +49,7 @@ class KalmanFilter{
 
     //获取预测
     DM getCal();
+    DM getq();
 
     //EKF的东西
     DM g(DM X, DM V);

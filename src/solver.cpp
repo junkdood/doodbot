@@ -14,9 +14,13 @@ DirectCollocationSolver::DirectCollocationSolver(const arm_model& _model, const 
     maxJ1subJ2 = opti.parameter();
     minV = opti.parameter();
     maxV = opti.parameter();
+
     T = opti.parameter();
+
     initialStateParameters = opti.parameter(4);
     finalStateParameters = opti.parameter(4);
+    AEKFqParameters = opti.parameter(4);
+
     opti.set_value(minJ0, _constraint.j0_min);
     opti.set_value(maxJ0, _constraint.j0_max);
     opti.set_value(minJ1, _constraint.j1_min);
@@ -65,9 +69,9 @@ void DirectCollocationSolver::setOptColloc(){
     costWeights w = settings._costWeights;
     for(casadi_int k = 0; k < N; ++k){
         if(k % 2 == 0 && k + 2 <= N){
-            f_curr = MX::vertcat(systemDynamics({X(Slice(), k), V(Slice(), k), dT}));
-            f_next = MX::vertcat(systemDynamics({X(Slice(), k + 2), V(Slice(), k + 2), dT}));
-            f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), dT}));
+            f_curr = MX::vertcat(systemDynamics({X(Slice(), k), V(Slice(), k), dT})) + AEKFqParameters;
+            f_next = MX::vertcat(systemDynamics({X(Slice(), k + 2), V(Slice(), k + 2), dT})) + AEKFqParameters;
+            f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), dT})) + AEKFqParameters;
             opti.subject_to(X(Slice(), k + 2) == X(Slice(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
             costFunction += w.control * dT / 6 * ( (mtimes(V(Slice(),k).T(),V(Slice(),k))/4) + 4 * (mtimes(V(Slice(),k+1).T(),V(Slice(),k+1))/4) + (mtimes(V(Slice(),k+2).T(),V(Slice(),k+2))/4));
@@ -125,17 +129,18 @@ bool DirectCollocationSolver::setupProblemColloc(const Settings& _settings){
     return true;
 }
 
-void DirectCollocationSolver::setParametersValue(const State& initialState, const State& finalState){
+void DirectCollocationSolver::setParametersValue(const State& initialState, const State& finalState, const State& AEKFq){
     opti.set_value(initialStateParameters, initialState.state);
     opti.set_value(finalStateParameters, finalState.state);
+    opti.set_value(AEKFqParameters, AEKFq.state);
 }
 
-bool DirectCollocationSolver::solveColloc(const State& initialState, const State& finalState){
+bool DirectCollocationSolver::solveColloc(const State& initialState, const State& finalState, const State& AEKFq){
     if(solverState == SolverState::NOT_INITIALIZED){
         throw std::runtime_error("problem not initialized");
         return false;
     }
-    setParametersValue(initialState, finalState);
+    setParametersValue(initialState, finalState, AEKFq);
     casadi_int npoints = 2 * static_cast<casadi_int> (settings.phaseLength);
     DM initPos = DM::zeros(4,1);
     DM finalPos = DM::zeros(4,1);
@@ -310,4 +315,8 @@ DM KalmanFilter::AEKF_unity(DM control, DM y_meas){
     std::cout<<R.get_str()<<std::endl;
 
     return h(X_AEKF);
+}
+
+DM KalmanFilter::getq(){
+    return q;
 }

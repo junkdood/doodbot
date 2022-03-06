@@ -149,8 +149,10 @@ int main(int argc, char **argv){
     //配置求解器
     solver.setupProblemColloc(settings);
 
-    
-    State initialState, finalState, Kalman;
+    //问题参数
+    State initialState, finalState, AEKFq;
+    AEKFq.state = DM::zeros(4);
+
     //设置开始状态，读取xyz坐标
     Pose init_pose = dobot_interface.Get_Pose();
     initialState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
@@ -160,7 +162,7 @@ int main(int argc, char **argv){
     finalState.state = {init_pose.x + 5, init_pose.y, init_pose.z, init_pose.r};
 
     //求解
-    bool ok = solver.solveColloc(initialState, finalState);
+    bool ok = solver.solveColloc(initialState, finalState, AEKFq);
 
     //获取求解结果，即控制量
     DM sol_state, sol_control;
@@ -185,7 +187,7 @@ int main(int argc, char **argv){
     initialState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
     ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\n", init_pose.x, init_pose.y, init_pose.z, init_pose.r);
     finalState.state = {init_pose.x, init_pose.y + 5, init_pose.z, init_pose.r};
-    ok = solver.solveColloc(initialState, finalState);
+    ok = solver.solveColloc(initialState, finalState, AEKFq);
     if(ok) solver.getSolutionColloc(sol_state, sol_control);
     for(int i = 0; i <  settings.phaseLength; ++i){
         dobot_interface.Send_Ctrl_Cmd(sol_control(0,i).scalar(), sol_control(1,i).scalar(), sol_control(2,i).scalar(), sol_control(3,i).scalar(), settings.time / (double)settings.phaseLength);
@@ -249,7 +251,8 @@ int main(int argc, char **argv){
     float pre_r = pose.r;
     DM pre_X = {pose.x, pose.y, pose.z, pose.r};
     while(ros::ok){
-        ok = solver.solveColloc(initialState, finalState);
+        AEKFq.state = filter.getq();
+        ok = solver.solveColloc(initialState, finalState, AEKFq);
         if(ok) solver.getSolutionColloc(sol_state, sol_control);
 
         dobot_interface.Send_Ctrl_Cmd(sol_control(0,0).scalar(), sol_control(1,0).scalar(), sol_control(2,0).scalar(), sol_control(3,0).scalar(), settings.time / (double)settings.phaseLength);   
