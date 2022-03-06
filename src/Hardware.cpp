@@ -1,5 +1,35 @@
 #include "dobot/Hardware.h"
 
+
+
+
+void Interface::xyz_to_jointAngle(float x, float y, float z, float r, float jointAngle[4]){
+    double R_2 = x*x + y*y;
+    double d_2 = R_2 + z*z;
+    double d = sqrt(d_2);
+    jointAngle[0]=asin(y/sqrt(R_2));
+    jointAngle[1]=acos(z/d) - acos((d_2 + _l1_2 - _l2_2)/(2*_l1*d));
+    jointAngle[2]=acos((d_2 + _l2_2 - _l1_2)/(2*_l2*d)) - asin(z/d);
+    jointAngle[3] = r;
+    return;
+}
+
+void Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z, float &r){
+    double R = _l1*sin(jointAngle[1]) + _l2*cos(jointAngle[2]);
+    x = R*cos(jointAngle[0]);
+    y = R*sin(jointAngle[0]);
+    z = _l1*cos(jointAngle[1]) - _l2*sin(jointAngle[2]);
+    r = jointAngle[3];
+    return;
+}
+
+
+
+
+
+
+
+
 Hardware_Interface::Hardware_Interface(char* port, unsigned int timeout){
     int result = ConnectDobot(port, 115200, 0, 0);
     switch (result) {
@@ -139,30 +169,6 @@ void Hardware_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, d
 }
 
 
-void Hardware_Interface::xyz_to_jointAngle(float x, float y, float z, float r, float jointAngle[4]){
-    double R_2 = x*x + y*y;
-    double d_2 = R_2 + z*z;
-    double d = sqrt(d_2);
-    jointAngle[0]=asin(y/sqrt(R_2));
-    jointAngle[1]=acos(z/d) - acos((d_2 + _l1_2 - _l2_2)/(2*_l1*d));
-    jointAngle[2]=acos((d_2 + _l2_2 - _l1_2)/(2*_l2*d)) - asin(z/d);
-    jointAngle[3] = r;
-    return;
-}
-
-void Hardware_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z, float &r){
-    double R = _l1*sin(jointAngle[1]) + _l2*cos(jointAngle[2]);
-    x = R*cos(jointAngle[0]);
-    y = R*sin(jointAngle[0]);
-    z = _l1*cos(jointAngle[1]) - _l2*sin(jointAngle[2]);
-    r = jointAngle[3];
-    return;
-}
-
-
-
-
-
 
 //#############################################################################
 
@@ -194,10 +200,10 @@ Pose Simulator_Interface::Get_Pose(){
     pose.jointAngle[2] = _sim_jointAngle[2];
     pose.jointAngle[3] = _sim_jointAngle[3];
 
-    pose.x += generateGaussianNoise(0,sqrt(0.0001));
-    pose.y += generateGaussianNoise(0,sqrt(0.0001));
-    pose.z += generateGaussianNoise(0,sqrt(0.0001));
-    pose.r += generateGaussianNoise(0,sqrt(0.0001));
+    pose.x += generateGaussianNoise(0,sqrt(0.001));
+    pose.y += generateGaussianNoise(0,sqrt(0.001));
+    pose.z += generateGaussianNoise(0,sqrt(0.001));
+    pose.r += generateGaussianNoise(0,sqrt(0.001));
     return pose;
 }
 
@@ -207,35 +213,16 @@ void Simulator_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, 
     _sim_jointAngle[2] += j2*dt;
     _sim_jointAngle[3] += j3*dt;
 
-    _sim_jointAngle[0] += generateGaussianNoise(0,sqrt(0.00001));
-    _sim_jointAngle[1] += generateGaussianNoise(0,sqrt(0.00001));
-    _sim_jointAngle[2] += generateGaussianNoise(0,sqrt(0.00001));
-    _sim_jointAngle[3] += generateGaussianNoise(0,sqrt(0.00001));
-}
-
-void Simulator_Interface::xyz_to_jointAngle(float x, float y, float z, float r, float jointAngle[4]){
-    double R_2 = x*x + y*y;
-    double d_2 = R_2 + z*z;
-    double d = sqrt(d_2);
-    jointAngle[0]=asin(y/sqrt(R_2));
-    jointAngle[1]=acos(z/d) - acos((d_2 + _l1_2 - _l2_2)/(2*_l1*d));
-    jointAngle[2]=acos((d_2 + _l2_2 - _l1_2)/(2*_l2*d)) - asin(z/d);
-    jointAngle[3] = r;
-    return;
-}
-
-void Simulator_Interface::jointAngle_to_xyz(float jointAngle[4], float &x, float &y, float &z, float &r){
-    double R = _l1*sin(jointAngle[1]) + _l2*cos(jointAngle[2]);
-    x = R*cos(jointAngle[0]);
-    y = R*sin(jointAngle[0]);
-    z = _l1*cos(jointAngle[1]) - _l2*sin(jointAngle[2]);
-    r = jointAngle[3];
-    return;
+    _sim_jointAngle[0] += generateGaussianNoise(0,sqrt(0.00000001));
+    _sim_jointAngle[1] += generateGaussianNoise(0,sqrt(0.00000001));
+    _sim_jointAngle[2] += generateGaussianNoise(0,sqrt(0.00000001));
+    _sim_jointAngle[3] += generateGaussianNoise(0,sqrt(0.00000001));
 }
 
 bool Simulator_Interface::isValid(){
-    return -90 < _sim_jointAngle[0] < 90 && 0 < _sim_jointAngle[1] < 85 && -10 < _sim_jointAngle[2] < 90 && 50 > _sim_jointAngle[1] - _sim_jointAngle[2] > -60;
+    return j0_min < _sim_jointAngle[0] < j0_max && j1_min < _sim_jointAngle[1] < j1_max && j2_min < _sim_jointAngle[2] < j2_max && j1_sub_j2_min < _sim_jointAngle[1] - _sim_jointAngle[2] < j1_sub_j2_max;
 }
+
 
 
 double generateGaussianNoise(double mu, double sigma){

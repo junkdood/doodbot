@@ -142,8 +142,7 @@ int main(int argc, char **argv){
 
     //获取dobot的物理模型
     arm_model model = {dobot_interface._l0, dobot_interface._l1, dobot_interface._l2};
-    double RPD=dobot_interface._RPD;
-    constraint_value constraint = {-90 * RPD, 90 * RPD, 0 * RPD, 85 * RPD, -10 * RPD, 90 * RPD, -60 * RPD, 50 * RPD, -15 * RPD, 15 * RPD};
+    constraint_value constraint = {dobot_interface.j0_min, dobot_interface.j0_max, dobot_interface.j1_min, dobot_interface.j1_max, dobot_interface.j2_min, dobot_interface.j2_max, dobot_interface.j1_sub_j2_min, dobot_interface.j1_sub_j2_max, dobot_interface.v_min, dobot_interface.v_max};
 
     //用dobot物理模型创建一个求解器
     DirectCollocationSolver solver(model, constraint);
