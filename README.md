@@ -75,7 +75,9 @@ rviz
    ```
 
 2. 因为机械臂关机之后关节不会锁定，重新开机后会有极大的误差，一定要跑归零
-3. c++ 安装 casadi
+
+
+3. 安装 c++ 的 casadi
    ```sh
    sudo apt-get install coinor-libipopt-dev
    sudo apt install gfortran
@@ -88,3 +90,18 @@ rviz
    make
    sudo make install
    ```
+
+4. 安装 kinect 驱动
+   [libfreenect2](https://github.com/OpenKinect/libfreenect2)
+
+5. 安装 kinect2_bridge
+   ```sh
+   cd ~/catkin_ws/src/
+   git clone https://github.com/code-iai/iai_kinect2.git
+   cd iai_kinect2
+   rosdep install -r --from-paths . --ignore-src
+   cd ..
+   catkin_make -DCMAKE_BUILD_TYPE="Release"
+   ```
+
+6. to be continue
