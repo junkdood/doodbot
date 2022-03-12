@@ -100,7 +100,7 @@ rviz
    git clone https://github.com/code-iai/iai_kinect2.git
    cd iai_kinect2
    rosdep install -r --from-paths . --ignore-src
-   cd ..
+   cd ../..
    catkin_make -DCMAKE_BUILD_TYPE="Release"
    ```
 
