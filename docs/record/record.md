@@ -199,3 +199,9 @@ KFdz:0.320252
 状态空间加入了 r
 
 模型预测控制与卡尔曼滤波融合
+
+#### 2022-3-12
+
+相机接入ros
+
+<img src="assets/camera.png" alt="camera" style="zoom:50%;" />
