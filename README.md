@@ -36,6 +36,11 @@ roslaunch dobot hardware_test.launch
 roslaunch dobot vis.launch
 ```
 
+运行rosbag模拟相机驱动输出
+```sh
+rosbag play -l rosbag/camera.bag
+```
+
 ### 键盘控制按键指南
 
 | key | move |

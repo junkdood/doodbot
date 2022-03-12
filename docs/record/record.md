@@ -205,3 +205,5 @@ KFdz:0.320252
 相机接入ros
 
 <img src="assets/camera.png" alt="camera" style="zoom:50%;" />
+
+利用rosbag记录了相机驱动输出，可以回放模拟
