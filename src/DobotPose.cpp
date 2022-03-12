@@ -27,7 +27,7 @@ int main(int argc, char **argv)
             ROS_ERROR("Failed to call GetPose.");
             return -1;
         }
-        ROS_INFO("\nx:%f\ny:%f\nz:%f\njointAngle:\n%f\n%f\n%f\n%f\n", srv.response.x, srv.response.y, srv.response.z, srv.response.jointAngle[0], srv.response.jointAngle[1], srv.response.jointAngle[2], srv.response.jointAngle[3]);
+        ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\njointAngle:\n%f\n%f\n%f\n%f\n", srv.response.x, srv.response.y, srv.response.z, srv.response.r, srv.response.jointAngle[0], srv.response.jointAngle[1], srv.response.jointAngle[2], srv.response.jointAngle[3]);
         
         // client = n.serviceClient<dobot::GetHOMEParams>("/DobotServer/GetHOMEParams");
         // dobot::GetHOMEParams srv1;
