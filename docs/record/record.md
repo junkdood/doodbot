@@ -216,3 +216,7 @@ vis.cpp 被废弃，用imager.py处理图像
 突然发现rosbag记录了师兄摸鱼
 
 <img src="assets/idle.png" alt="idle" style="zoom:50%;" />
+
+
+实现霍夫变换自动识别点，然后投影变换
+<img src="assets/board.png" alt="board" style="zoom:50%;" />

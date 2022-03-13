@@ -294,41 +294,29 @@ int main(int argc, char **argv){
     // [,,-40,0] [,,-60,0]
     // [190,15,-60,0][190,-15,-60,0][160,15,-60,0][160,-15,-60,0]
     moveto_offline(dobot_interface, solver, settings, {190,45,-40,0});
-
     moveto_offline(dobot_interface, solver, settings, {190,45,-60,0});
-
     moveto_offline(dobot_interface, solver, settings, {190,-45,-60,0});
-
     moveto_offline(dobot_interface, solver, settings, {190,-45,-40,0});
 
 
 
     moveto_offline(dobot_interface, solver, settings, {160,-45,-40,0});
-
     moveto_offline(dobot_interface, solver, settings, {160,-45,-60,0});
-
     moveto_offline(dobot_interface, solver, settings, {160,45,-60,0});
-
     moveto_offline(dobot_interface, solver, settings, {160,45,-40,0});
 
 
 
     moveto_offline(dobot_interface, solver, settings, {130,15,-40,0});
-
     moveto_offline(dobot_interface, solver, settings, {130,15,-60,0});
-
     moveto_offline(dobot_interface, solver, settings, {220,15,-60,0});
-
     moveto_offline(dobot_interface, solver, settings, {220,15,-40,0});
 
 
 
     moveto_offline(dobot_interface, solver, settings, {220,-15,-40,0});
-
     moveto_offline(dobot_interface, solver, settings, {220,-15,-60,0});
-
     moveto_offline(dobot_interface, solver, settings, {130,-15,-60,0});
-
     moveto_offline(dobot_interface, solver, settings, {130,-15,-40,0});
     
     return 0; 
