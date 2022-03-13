@@ -18,6 +18,22 @@ void msgCallback(const dobot::Board::ConstPtr &msg){
     std::cout << "location=" << player.Getlocation() << std::endl;
 }
 
+void moveto_offline(Hardware_Interface &dobot_interface, DirectCollocationSolver &solver, Settings &settings,DM destination){
+    Pose init_pose = dobot_interface.Get_Pose();
+    // ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\n", init_pose.x, init_pose.y, init_pose.z, init_pose.r);
+    State initialState, finalState, AEKFq;
+    initialState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
+    finalState.state = destination;
+    AEKFq.state = DM::zeros(4);
+    DM sol_state, sol_control;
+    bool ok = solver.solveColloc(initialState, finalState, AEKFq);
+    if(ok) solver.getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  settings.phaseLength; ++i){
+        dobot_interface.Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
+    }
+    ros::Duration(2).sleep();
+}
+
 int main(int argc, char **argv){
     if (argc < 2) {
         ROS_ERROR("[USAGE]Application portName");
@@ -129,14 +145,15 @@ int main(int argc, char **argv){
 
 
     //专门与dobot交互的对象
-    // Hardware_Interface dobot_interface(argv[1]);
-    Simulator_Interface dobot_interface;
+    Hardware_Interface dobot_interface(argv[1]);
+    // Simulator_Interface dobot_interface;
 
     //求解器的基础设置
     Settings settings;
-    settings.phaseLength = 50;
+    settings.phaseLength = 20;
     settings.time = 5;
-    settings._costWeights.control = 1;
+    settings._costWeights.control = 0;
+    settings._costWeights.path = 1;
     settings.solverVerbosity = 0;
     settings.ipoptLinearSolver = "mumps";
 
@@ -238,40 +255,81 @@ int main(int argc, char **argv){
 
 
     //AEKF
-    KalmanFilter filter(model, settings.time / (double)settings.phaseLength);
+    // KalmanFilter filter(model, settings.time / (double)settings.phaseLength);
 
-    Pose pose = dobot_interface.Get_Pose();
-    filter.reset({pose.x, pose.y, pose.z, pose.r});
-    initialState.state = {pose.x, pose.y, pose.z, pose.r};
-    finalState.state = {pose.x + 5, pose.y + 15, pose.z, pose.r};
+    // Pose pose = dobot_interface.Get_Pose();
+    // filter.reset({pose.x, pose.y, pose.z, pose.r});
+    // initialState.state = {pose.x, pose.y, pose.z, pose.r};
+    // finalState.state = {pose.x + 5, pose.y + 15, pose.z, pose.r};
 
-    float pre_x = pose.x;
-    float pre_y = pose.y;
-    float pre_z = pose.z;
-    float pre_r = pose.r;
-    DM pre_X = {pose.x, pose.y, pose.z, pose.r};
-    while(ros::ok){
-        AEKFq.state = filter.getq();
-        ok = solver.solveColloc(initialState, finalState, AEKFq);
-        if(ok) solver.getSolutionColloc(sol_state, sol_control);
+    // float pre_x = pose.x;
+    // float pre_y = pose.y;
+    // float pre_z = pose.z;
+    // float pre_r = pose.r;
+    // DM pre_X = {pose.x, pose.y, pose.z, pose.r};
+    // while(ros::ok){
+    //     AEKFq.state = filter.getq();
+    //     ok = solver.solveColloc(initialState, finalState, AEKFq);
+    //     if(ok) solver.getSolutionColloc(sol_state, sol_control);
 
-        dobot_interface.Send_Ctrl_Cmd(sol_control(0,0).scalar(), sol_control(1,0).scalar(), sol_control(2,0).scalar(), sol_control(3,0).scalar(), settings.time / (double)settings.phaseLength);   
+    //     dobot_interface.Send_Ctrl_Cmd(sol_control(0,0).scalar(), sol_control(1,0).scalar(), sol_control(2,0).scalar(), sol_control(3,0).scalar(), settings.time / (double)settings.phaseLength);   
         
-        pose = dobot_interface.Get_Pose();
+    //     pose = dobot_interface.Get_Pose();
 
-        DM X = filter.AEKF_unity(sol_control(Slice(),0), {pose.x, pose.y, pose.z, pose.r});
-        ROS_INFO("\ndx:%f\ndy:%f\ndz:%f\ndr:%f\n", pose.x - pre_x, pose.y - pre_y, pose.z - pre_z, pose.r - pre_r);
-        pre_x = pose.x;
-        pre_y = pose.y;
-        pre_z = pose.z;
-        pre_r = pose.r;
-        ROS_INFO("\nKFdx:%f\nKFdy:%f\nKFdz:%f\nFdr:%f\n", X(0).scalar() - pre_X(0).scalar(), X(1).scalar() - pre_X(1).scalar(), X(2).scalar() - pre_X(2).scalar(), X(3).scalar() - pre_X(3).scalar());
-        pre_X = X;
+    //     DM X = filter.AEKF_unity(sol_control(Slice(),0), {pose.x, pose.y, pose.z, pose.r});
+    //     ROS_INFO("\ndx:%f\ndy:%f\ndz:%f\ndr:%f\n", pose.x - pre_x, pose.y - pre_y, pose.z - pre_z, pose.r - pre_r);
+    //     pre_x = pose.x;
+    //     pre_y = pose.y;
+    //     pre_z = pose.z;
+    //     pre_r = pose.r;
+    //     ROS_INFO("\nKFdx:%f\nKFdy:%f\nKFdz:%f\nFdr:%f\n", X(0).scalar() - pre_X(0).scalar(), X(1).scalar() - pre_X(1).scalar(), X(2).scalar() - pre_X(2).scalar(), X(3).scalar() - pre_X(3).scalar());
+    //     pre_X = X;
 
-        initialState.state = X;
-        ros::Duration(0.1).sleep();
-    }
+    //     initialState.state = X;
+    //     ros::Duration(0.1).sleep();
+    // }
     
+
+    // 画井字棋
+    // [,,-40,0] [,,-60,0]
+    // [190,15,-60,0][190,-15,-60,0][160,15,-60,0][160,-15,-60,0]
+    moveto_offline(dobot_interface, solver, settings, {190,45,-40,0});
+
+    moveto_offline(dobot_interface, solver, settings, {190,45,-60,0});
+
+    moveto_offline(dobot_interface, solver, settings, {190,-45,-60,0});
+
+    moveto_offline(dobot_interface, solver, settings, {190,-45,-40,0});
+
+
+
+    moveto_offline(dobot_interface, solver, settings, {160,-45,-40,0});
+
+    moveto_offline(dobot_interface, solver, settings, {160,-45,-60,0});
+
+    moveto_offline(dobot_interface, solver, settings, {160,45,-60,0});
+
+    moveto_offline(dobot_interface, solver, settings, {160,45,-40,0});
+
+
+
+    moveto_offline(dobot_interface, solver, settings, {130,15,-40,0});
+
+    moveto_offline(dobot_interface, solver, settings, {130,15,-60,0});
+
+    moveto_offline(dobot_interface, solver, settings, {220,15,-60,0});
+
+    moveto_offline(dobot_interface, solver, settings, {220,15,-40,0});
+
+
+
+    moveto_offline(dobot_interface, solver, settings, {220,-15,-40,0});
+
+    moveto_offline(dobot_interface, solver, settings, {220,-15,-60,0});
+
+    moveto_offline(dobot_interface, solver, settings, {130,-15,-60,0});
+
+    moveto_offline(dobot_interface, solver, settings, {130,-15,-40,0});
     
     return 0; 
 }

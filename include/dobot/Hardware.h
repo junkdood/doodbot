@@ -17,6 +17,7 @@ class Interface{
     virtual void Set_Home() = 0;
     virtual Pose Get_Pose() = 0;
     virtual void Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, double dt) = 0;
+    virtual void Send_CP_Cmd(float x, float y, float z, float r) = 0;
 
     //物理模型相关
     void xyz_to_jointAngle(float x, float y, float z, float r, float jointAngle[4]);
@@ -55,8 +56,9 @@ class Hardware_Interface : public Interface{
     JOGJointParams Get_Params();
     void Set_Ratio();
     JOGCommonParams Get_Ratio();
-    void Send_Ctrl_Cmd(uint32_t duration, joint_set target_joint);
+    void Send_joint_Cmd(uint32_t duration, joint_set target_joint);
     void Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, double dt);
+    void Send_CP_Cmd(float x, float y, float z, float r);
 };
 
 class Simulator_Interface : public Interface{
@@ -67,6 +69,7 @@ class Simulator_Interface : public Interface{
     void Set_Home();
     Pose Get_Pose();
     void Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, double dt);
+    void Send_CP_Cmd(float x, float y, float z, float r);
 
     private:
     bool isValid();

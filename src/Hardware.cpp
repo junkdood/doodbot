@@ -48,6 +48,23 @@ Hardware_Interface::Hardware_Interface(char* port, unsigned int timeout){
         DisconnectDobot();
         throw "Communicate Failed";
     }
+
+    CPParams params;
+
+    if(GetCPParams(&params)!=DobotCommunicate_NoError){
+        DisconnectDobot();
+        throw "Communicate Failed";
+    }
+    std::cout<<params.planAcc<<"  "<<params.juncitionVel<<"  "<<params.acc<<"  "<<int(params.realTimeTrack)<<std::endl;
+
+
+    uint64_t queuedCmdIndex;
+
+    if(SetCPParams(&params, true, &queuedCmdIndex)!=DobotCommunicate_NoError){
+        DisconnectDobot();
+        throw "Communicate Failed";
+    }
+
     return;
 }
 
@@ -104,7 +121,7 @@ JOGCommonParams Hardware_Interface::Get_Ratio(){
     return params;
 }
 
-void Hardware_Interface::Send_Ctrl_Cmd(uint32_t duration, joint_set target_joint){
+void Hardware_Interface::Send_joint_Cmd(uint32_t duration, joint_set target_joint){
 
 
     if(SetQueuedCmdStopExec()!=DobotCommunicate_NoError){
@@ -163,6 +180,22 @@ void Hardware_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, d
     usleep (100000);
 }
 
+void Hardware_Interface::Send_CP_Cmd(float x, float y, float z, float r){
+
+    CPCmd cmd;
+    uint64_t queuedCmdIndex;
+
+    cmd.cpMode = 1;
+    cmd.x = x;
+    cmd.y = y;
+    cmd.z = z;
+    cmd.velocity = 15;
+
+    if(SetCPCmd(&cmd, true, &queuedCmdIndex)!=DobotCommunicate_NoError){
+        throw "Communicate Failed";
+    }
+    // usleep (100000);
+}
 
 
 //#############################################################################
@@ -195,10 +228,10 @@ Pose Simulator_Interface::Get_Pose(){
     pose.jointAngle[2] = _sim_jointAngle[2];
     pose.jointAngle[3] = _sim_jointAngle[3];
 
-    pose.x += generateGaussianNoise(0,sqrt(0.001));
-    pose.y += generateGaussianNoise(0,sqrt(0.001));
-    pose.z += generateGaussianNoise(0,sqrt(0.001));
-    pose.r += generateGaussianNoise(0,sqrt(0.001));
+    // pose.x += generateGaussianNoise(0,sqrt(0.001));
+    // pose.y += generateGaussianNoise(0,sqrt(0.001));
+    // pose.z += generateGaussianNoise(0,sqrt(0.001));
+    // pose.r += generateGaussianNoise(0,sqrt(0.001));
     return pose;
 }
 
@@ -208,10 +241,14 @@ void Simulator_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, 
     _sim_jointAngle[2] += j2*dt;
     _sim_jointAngle[3] += j3*dt;
 
-    _sim_jointAngle[0] += generateGaussianNoise(0,sqrt(0.00000001));
-    _sim_jointAngle[1] += generateGaussianNoise(0,sqrt(0.00000001));
-    _sim_jointAngle[2] += generateGaussianNoise(0,sqrt(0.00000001));
-    _sim_jointAngle[3] += generateGaussianNoise(0,sqrt(0.00000001));
+    // _sim_jointAngle[0] += generateGaussianNoise(0,sqrt(0.00000001));
+    // _sim_jointAngle[1] += generateGaussianNoise(0,sqrt(0.00000001));
+    // _sim_jointAngle[2] += generateGaussianNoise(0,sqrt(0.00000001));
+    // _sim_jointAngle[3] += generateGaussianNoise(0,sqrt(0.00000001));
+}
+
+void Simulator_Interface::Send_CP_Cmd(float x, float y, float z, float r){
+    xyz_to_jointAngle(x, y, z, r, _sim_jointAngle);
 }
 
 bool Simulator_Interface::isValid(){

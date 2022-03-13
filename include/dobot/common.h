@@ -4,6 +4,7 @@
 
 typedef struct{
     double control;
+    double path;
 }costWeights;
 
 typedef struct{

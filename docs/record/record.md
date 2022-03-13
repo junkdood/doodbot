@@ -207,3 +207,12 @@ KFdz:0.320252
 <img src="assets/camera.png" alt="camera" style="zoom:50%;" />
 
 利用rosbag记录了相机驱动输出，可以回放模拟
+
+
+#### 2022-3-13
+
+vis.cpp 被废弃，用imager.py处理图像
+
+突然发现rosbag记录了师兄摸鱼
+
+<img src="assets/idle.png" alt="idle" style="zoom:50%;" />

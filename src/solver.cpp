@@ -74,6 +74,7 @@ void DirectCollocationSolver::setOptColloc(){
             f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), dT})) + AEKFqParameters;
             opti.subject_to(X(Slice(), k + 2) == X(Slice(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
+            costFunction += w.path * mtimes((X(Slice(),k+2)-X(Slice(),k)).T(), (X(Slice(),k+2)-X(Slice(),k)));
             costFunction += w.control * dT / 6 * ( (mtimes(V(Slice(),k).T(),V(Slice(),k))/4) + 4 * (mtimes(V(Slice(),k+1).T(),V(Slice(),k+1))/4) + (mtimes(V(Slice(),k+2).T(),V(Slice(),k+2))/4));
         }
         else if(k % 2 != 0){
