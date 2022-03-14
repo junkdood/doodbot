@@ -1,11 +1,41 @@
 #!/usr/bin/python3
 # coding:utf-8 
+import os
 import rospy
 from sensor_msgs.msg import Image
 import cv2
 from cv_bridge import CvBridge
 import numpy as np
 from copy import deepcopy
+import tensorflow as tf
+from pretrain import CNN
+from std_msgs.msg import Int32MultiArray
+
+def get_letter(num):
+    return chr(num + 64) + " / " + chr(num + 96)  # 大写/小写字母
+
+class Predict(object):
+    def __init__(self):
+        latest = tf.train.latest_checkpoint('./src/dobot/CNNdata/modelckpt')
+        self.cnn = CNN()
+        self.cnn.model.load_weights(latest)
+
+    def predict_tf(self, image):
+        image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+        _, image = cv2.threshold(image,238,255,cv2.THRESH_BINARY)
+        image = cv2.copyMakeBorder(image,20,20,20,20, cv2.BORDER_CONSTANT,value=255)
+        image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
+        image = np.reshape(image, (28, 28, 1)) / 255
+        x = np.array([1 - image])
+
+        y = self.cnn.model.predict(x)
+
+        # print(np.argmax(y[0]))
+        # print('\t-> 这个图片写的是：', get_letter(np.argmax(y[0])))
+        return np.argmax(y[0])
+
+    def predict_normal(self, image):
+        pass
 
 
 class Imager():
@@ -15,6 +45,14 @@ class Imager():
         self.rate = rospy.Rate(10)
 
         self._bridge = CvBridge()
+
+        self._predicter = Predict()
+
+        self._OXresult = [
+            [' ', ' ', ' '],
+            [' ', ' ', ' '],
+            [' ', ' ', ' ']
+        ]
 
     def callback(self, image_in):
         image_cv = self._bridge.imgmsg_to_cv2(image_in, desired_encoding='bgr8')
@@ -62,7 +100,7 @@ class Imager():
                 y1 = int(y0 + 1000*(a))
                 x2 = int(x0 - 1000*(-b))
                 y2 = int(y0 - 1000*(a))
-                cv2.line(image_cv,(x1,y1), (x2,y2), (0,0,255),1)
+                # cv2.line(image_cv,(x1,y1), (x2,y2), (0,0,255),1)
 
             for i, target_line_0 in enumerate(target_lines):
                 for j, target_line_1 in enumerate(target_lines):
@@ -83,6 +121,7 @@ class Imager():
                 if len(target_points) >= 4:
                     break
 
+        
         if len(target_points) >= 4:
 
             ##################sh*t code to sort the point###############################################
@@ -151,11 +190,26 @@ class Imager():
             M = cv2.getPerspectiveTransform(p1,p2)
             image_cv = cv2.warpPerspective(image_cv, M, (1000, 1000))
 
+            for i in range(3):
+                for j in range(3):
+                    OXsymNum = self._predicter.predict_tf(image_cv[200 + i*200 + 20: 200 + i*200 + 180, 200 + j*200 + 20: 200 + j*200 + 180])
+                    if OXsymNum == 15 or OXsymNum == 4:
+                        self._OXresult[i][j] = 'O'
+                    elif OXsymNum == 25 or OXsymNum == 24:
+                        self._OXresult[i][j] = 'X'
+                    else:
+                        self._OXresult[i][j] = ' '
                 
-
-        # image_cv = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
+                
+        # tmp = cv2.cvtColor(image_cv[420:580, 620:780], cv2.COLOR_RGB2GRAY)
+        # _, tmp = cv2.threshold(tmp,238,255,cv2.THRESH_BINARY)
+        # tmp = cv2.copyMakeBorder(tmp,20,20,20,20, cv2.BORDER_CONSTANT,value=255)
+        # tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
         result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
         self._pub.publish(result)
+        print(self._OXresult[0])
+        print(self._OXresult[1])
+        print(self._OXresult[2])
 
     def main(self):
         rospy.spin()

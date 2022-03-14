@@ -219,4 +219,17 @@ vis.cpp 被废弃，用imager.py处理图像
 
 
 实现霍夫变换自动识别点，然后投影变换
+
 <img src="assets/board.png" alt="board" style="zoom:50%;" />
+
+#### 2022-3-13
+
+相机识别模型初步实现
+利用CNN识别字母，区分X和O
+识别内容
+
+<img src="assets/actual.jpg" alt="actual" style="zoom:15%;" />
+
+识别结果
+
+<img src="assets/recognize.png" alt="recognize" style="zoom:150%;" />

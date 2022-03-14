@@ -31,9 +31,15 @@ roslaunch dobot jog.launch
 roslaunch dobot hardware_test.launch
 ```
 
-跑相机输出topic
+跑相机图像处理程序
 ```sh
-roslaunch dobot vis.launch
+rosrun dobot imager.py
+```
+
+训练OX识别
+跑相机图像处理程序(数据集已经被我删了)
+```sh
+rosrun dobot pretrain.py
 ```
 
 运行rosbag模拟相机驱动输出
