@@ -49,18 +49,20 @@ class Imager():
 
         self._predicter = Predict()
 
-        self._OXresult = [
-            [' ', ' ', ' '],
-            [' ', ' ', ' '],
-            [' ', ' ', ' ']
-        ]
-
-        self._OXstate = Int32MultiArray()
-        self._OXstate.data = [
-            0, 0, 0,
-            0, 0, 0,
-            0, 0, 0
-        ]
+    def linepainter(self, lines, image):
+        # 把线在图上标出来
+        for line in lines:
+            r = line[0]
+            theta = line[1]
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a*r
+            y0 = b*r
+            x1 = int(x0 + 1000*(-b))
+            y1 = int(y0 + 1000*(a))
+            x2 = int(x0 - 1000*(-b))
+            y2 = int(y0 - 1000*(a))
+            cv2.line(image,(x1,y1), (x2,y2), (0,0,255),1)
 
     def preprocess(self, image):
         # 裁减
@@ -86,22 +88,6 @@ class Imager():
                     break
 
         return target_lines
-
-    def linepainter(self, lines, image):
-        # 把线在图上标出来
-        for line in lines:
-            r = line[0]
-            theta = line[1]
-            a = np.cos(theta)
-            b = np.sin(theta)
-            x0 = a*r
-            y0 = b*r
-            x1 = int(x0 + 1000*(-b))
-            y1 = int(y0 + 1000*(a))
-            x2 = int(x0 - 1000*(-b))
-            y2 = int(y0 - 1000*(a))
-            cv2.line(image,(x1,y1), (x2,y2), (0,0,255),1)
-
 
     def pointfinder(self, target_lines):
         # 找到井字的四个交点
@@ -233,18 +219,20 @@ class Imager():
 
         crosspoints = self.findboard(image_cv)
 
+
+        OXresult = [
+            [' ', ' ', ' '],
+            [' ', ' ', ' '],
+            [' ', ' ', ' ']
+        ]
+        OXstate = Int32MultiArray()
+        OXstate.data = [
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0
+        ]
         if len(crosspoints) == 0:
             rospy.loginfo("No board found!")
-            self._OXresult = [
-                [' ', ' ', ' '],
-                [' ', ' ', ' '],
-                [' ', ' ', ' ']
-            ]
-            self._OXstate.data = [
-                0, 0, 0,
-                0, 0, 0,
-                0, 0, 0
-            ]
         else:
             for crosspoint in crosspoints:
                 # cv2.circle(image_cv,(crosspoint[0],crosspoint[1]),1,(0,255,0),4)
@@ -257,15 +245,15 @@ class Imager():
                     OXsymNum = self._predicter.predict_tf(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190])
                     if OXsymNum == 15 or OXsymNum == 4:
                         # O / D
-                        self._OXresult[i][j] = 'O'
-                        self._OXstate.data[i*3+j] = 2
+                        OXresult[i][j] = 'O'
+                        OXstate.data[i*3+j] = 2
                     elif OXsymNum == 24 or OXsymNum == 25:
                         # X / Y
-                        self._OXresult[i][j] = 'X'
-                        self._OXstate.data[i*3+j] = 3
+                        OXresult[i][j] = 'X'
+                        OXstate.data[i*3+j] = 3
                     else:
-                        self._OXresult[i][j] = ' '
-                        self._OXstate.data[i*3+j] = 1
+                        OXresult[i][j] = ' '
+                        OXstate.data[i*3+j] = 1
                         
                 
         # i = 2
@@ -281,10 +269,10 @@ class Imager():
 
 
         self._pub0.publish(result)
-        self._pub1.publish(self._OXstate)
-        print(self._OXresult[0])
-        print(self._OXresult[1])
-        print(self._OXresult[2])
+        self._pub1.publish(OXstate)
+        print(OXresult[0])
+        print(OXresult[1])
+        print(OXresult[2])
 
     def main(self):
         rospy.spin()

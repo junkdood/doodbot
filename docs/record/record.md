@@ -222,7 +222,7 @@ vis.cpp 被废弃，用imager.py处理图像
 
 <img src="assets/board.png" alt="board" style="zoom:50%;" />
 
-#### 2022-3-13
+#### 2022-3-14
 
 相机识别模型初步实现
 利用CNN识别字母，区分X和O
@@ -233,3 +233,8 @@ vis.cpp 被废弃，用imager.py处理图像
 识别结果
 
 <img src="assets/recognize.png" alt="recognize" style="zoom:150%;" />
+
+#### 2022-3-15
+
+重构imager的代码
+使用std_msgs.msg 的 Int32MultiArray 传递井字棋状态

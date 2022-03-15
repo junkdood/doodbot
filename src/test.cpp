@@ -18,7 +18,7 @@ void msgCallback(const dobot::Board::ConstPtr &msg){
     std::cout << "location=" << player.Getlocation() << std::endl;
 }
 
-void moveto_offline(Hardware_Interface &dobot_interface, DirectCollocationSolver &solver, Settings &settings,DM destination){
+void moveto_offline(Interface &dobot_interface, DirectCollocationSolver &solver, Settings &settings,DM destination){
     Pose init_pose = dobot_interface.Get_Pose();
     // ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\n", init_pose.x, init_pose.y, init_pose.z, init_pose.r);
     State initialState, finalState, AEKFq;
@@ -145,8 +145,8 @@ int main(int argc, char **argv){
 
 
     //专门与dobot交互的对象
-    Hardware_Interface dobot_interface(argv[1]);
-    // Simulator_Interface dobot_interface;
+    // Hardware_Interface dobot_interface(argv[1]);
+    Simulator_Interface dobot_interface;
 
     //求解器的基础设置
     Settings settings;

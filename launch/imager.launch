@@ -1,3 +1,0 @@
-<launch>
-  <node name="imager" pkg="dobot" type="imager.py" output="screen"/>
-</launch>
