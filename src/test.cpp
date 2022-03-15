@@ -216,7 +216,7 @@ int main(int argc, char **argv){
 
     //vis
     // ros::Subscriber msg_sub = n.subscribe("vis_msg", 100, msgCallback);
-    // ros::spin();
+    // ros::spin(); 
 
 
     //KalmanFilter
