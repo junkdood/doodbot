@@ -23,7 +23,7 @@ class Predict(object):
     def predict_tf(self, image):
         image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
         _, image = cv2.threshold(image,238,255,cv2.THRESH_BINARY)
-        image = cv2.copyMakeBorder(image,20,20,20,20, cv2.BORDER_CONSTANT,value=255)
+        image = cv2.copyMakeBorder(image,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
         image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
         image = np.reshape(image, (28, 28, 1)) / 255
         x = np.array([1 - image])
@@ -62,145 +62,190 @@ class Imager():
             0, 0, 0
         ]
 
-    def callback(self, image_in):
-        image_cv = self._bridge.imgmsg_to_cv2(image_in, desired_encoding='bgr8')
-
+    def preprocess(self, image):
         #裁减
-        rows, cols, _ = image_cv.shape
+        rows, cols, _ = image.shape
         rospy.loginfo("r:{}, c:{}".format(rows,cols))
-        image_cv = image_cv[int(rows*0.65):int(rows*0.9), int(cols*0.27):int(cols*0.45)]
-        
+        return image[int(rows*0.65):int(rows*0.9), int(cols*0.27):int(cols*0.45)]
+
+
+    def linefilter(self, lines):
+        target_lines = []
+        for line in lines:
+            r = line[0][0]
+            theta = line[0][1]
+            flag = True
+            for target_line in target_lines:
+                if abs(r - target_line[0]) <20 and abs(theta - target_line[1]) < 20 * np.pi/180:
+                    flag = False
+                    break
+            if flag:
+                target_lines.append([r,theta])
+                if len(target_lines) >= 4:
+                    break
+
+        return target_lines
+
+    def linepainter(self, lines, image):
+        for line in lines:
+            r = line[0]
+            theta = line[1]
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a*r
+            y0 = b*r
+            x1 = int(x0 + 1000*(-b))
+            y1 = int(y0 + 1000*(a))
+            x2 = int(x0 - 1000*(-b))
+            y2 = int(y0 - 1000*(a))
+            cv2.line(image,(x1,y1), (x2,y2), (0,0,255),1)
+
+
+    def pointfinder(self, target_lines):
+        target_points = []
+        for i, target_line_0 in enumerate(target_lines):
+            for j, target_line_1 in enumerate(target_lines):
+                if j <= i:
+                    continue
+                r0, t0 = target_line_0[0], target_line_0[1]
+                r1, t1 = target_line_1[0], target_line_1[1]
+                if abs(t0 - t1) > 40 * np.pi/180:
+                    A = np.array([
+                        [np.cos(t0),np.sin(t0)],
+                        [np.cos(t1),np.sin(t1)]
+                    ])
+                    b = np.array([r0,r1])
+                    x0, y0 = np.linalg.solve(A,b)
+                    target_points.append([int(np.round(x0)), int(np.round(y0))])
+                    if len(target_points) >= 4:
+                        break
+            if len(target_points) >= 4:
+                break
+
+        return target_points
+
+    def pointsorter(self, target_points):
+        sorted_points = []
+        ##################sh*t code to sort the point###############################################
+        for i, target_point_0 in enumerate(target_points):
+            flag = True
+            for j, target_point_1 in enumerate(target_points):
+                if j == i:
+                    continue
+                if target_point_0[1] < target_point_1[1]:
+                    flag = False
+                    break
+            if flag:
+                sorted_points.append([target_point_0[0], target_point_0[1]])
+        for i, target_point_0 in enumerate(target_points):
+            flag = True
+            for j, target_point_1 in enumerate(target_points):
+                if j == i:
+                    continue
+                if target_point_0[0] > target_point_1[0]:
+                    flag = False
+                    break
+            if flag:
+                sorted_points.append([target_point_0[0], target_point_0[1]])
+        for i, target_point_0 in enumerate(target_points):
+            flag = True
+            for j, target_point_1 in enumerate(target_points):
+                if j == i:
+                    continue
+                if target_point_0[0] < target_point_1[0]:
+                    flag = False
+                    break
+            if flag:
+                sorted_points.append([target_point_0[0], target_point_0[1]])
+        for i, target_point_0 in enumerate(target_points):
+            flag = True
+            for j, target_point_1 in enumerate(target_points):
+                if j == i:
+                    continue
+                if target_point_0[1] > target_point_1[1]:
+                    flag = False
+                    break
+            if flag:
+                sorted_points.append([target_point_0[0], target_point_0[1]])
+        ##################sh*t code to sort the point###############################################
+        return sorted_points
+
+    def findboard(self, image):
         # # 边缘检测
-        # image_cv = cv2.GaussianBlur(image_cv, (3,3), 0)
-        edges = cv2.Canny(image_cv, 30, 100)
+        # image = cv2.GaussianBlur(image, (3,3), 0)
+        edges = cv2.Canny(image, 30, 100)
 
         # # 角点检测
         # corners = cv2.cornerHarris(edges,2,3,0.045)
         # corners = cv2.dilate(corners,None)
-        # image_cv[dst>0.2*dst.max()]=255
+        # image[dst>0.2*dst.max()]=255
 
         lines = cv2.HoughLines(edges,1,np.pi/180, 100)
-        target_lines = []
-        if lines is not None:
-            for line in lines:
-                r = line[0][0]
-                theta = line[0][1]
-                flag = True
-                for target_line in target_lines:
-                    if abs(r - target_line[0]) <20 and abs(theta - target_line[1]) < 20 * np.pi/180:
-                        flag = False
-                        break
-                if flag:
-                    target_lines.append([r,theta])
-                    if len(target_lines) >= 4:
-                        break
 
-        target_points = []
-        if len(target_lines) >= 4:
-            for target_line in target_lines:
-                r = target_line[0]
-                theta = target_line[1]
-                a = np.cos(theta)
-                b = np.sin(theta)
-                x0 = a*r
-                y0 = b*r
-                x1 = int(x0 + 1000*(-b))
-                y1 = int(y0 + 1000*(a))
-                x2 = int(x0 - 1000*(-b))
-                y2 = int(y0 - 1000*(a))
-                # cv2.line(image_cv,(x1,y1), (x2,y2), (0,0,255),1)
+        if lines is None:
+            rospy.loginfo("No line found!")
+        else:
+            target_lines = self.linefilter(lines)
+            if len(target_lines) < 4:
+                rospy.loginfo("Lines not enough!")
+            else:
+                # self.linepainter(lines, image)
+                target_points = self.pointfinder(target_lines)
+                if len(target_points) < 4:
+                    rospy.loginfo("Points not enough!")
+                else:
+                    sorted_points = self.pointsorter(target_points)
+                    return sorted_points
 
-            for i, target_line_0 in enumerate(target_lines):
-                for j, target_line_1 in enumerate(target_lines):
-                    if j <= i:
-                        continue
-                    r0, t0 = target_line_0[0], target_line_0[1]
-                    r1, t1 = target_line_1[0], target_line_1[1]
-                    if abs(t0 - t1) > 40 * np.pi/180:
-                        A = np.array([
-                            [np.cos(t0),np.sin(t0)],
-                            [np.cos(t1),np.sin(t1)]
-                        ])
-                        b = np.array([r0,r1])
-                        x0, y0 = np.linalg.solve(A,b)
-                        target_points.append([int(np.round(x0)), int(np.round(y0))])
-                        if len(target_points) >= 4:
-                            break
-                if len(target_points) >= 4:
-                    break
+        return []
+
+    def projection(self, crosspoints, image):
+        p1 = np.float32([
+            [crosspoints[0][0],crosspoints[0][1]], 
+            [crosspoints[1][0],crosspoints[1][1]],
+            [crosspoints[2][0],crosspoints[2][1]],
+            [crosspoints[3][0],crosspoints[3][1]]
+        ])
+        p2 = np.float32([
+            [400,400], 
+            [600,400],
+            [400,600],
+            [600,600]
+        ])
+        M = cv2.getPerspectiveTransform(p1,p2)
+        return cv2.warpPerspective(image, M, (1000, 1000))
 
         
-        if len(target_points) >= 4:
 
-            ##################sh*t code to sort the point###############################################
-            temp_points = deepcopy(target_points)
-            target_points = []
-            for i, temp_point_0 in enumerate(temp_points):
-                flag = True
-                for j, temp_point_1 in enumerate(temp_points):
-                    if j == i:
-                        continue
-                    if temp_point_0[1] < temp_point_1[1]:
-                        flag = False
-                        break
-                if flag:
-                    target_points.append([temp_point_0[0], temp_point_0[1]])
-            for i, temp_point_0 in enumerate(temp_points):
-                flag = True
-                for j, temp_point_1 in enumerate(temp_points):
-                    if j == i:
-                        continue
-                    if temp_point_0[0] > temp_point_1[0]:
-                        flag = False
-                        break
-                if flag:
-                    target_points.append([temp_point_0[0], temp_point_0[1]])
-            for i, temp_point_0 in enumerate(temp_points):
-                flag = True
-                for j, temp_point_1 in enumerate(temp_points):
-                    if j == i:
-                        continue
-                    if temp_point_0[0] < temp_point_1[0]:
-                        flag = False
-                        break
-                if flag:
-                    target_points.append([temp_point_0[0], temp_point_0[1]])
-            for i, temp_point_0 in enumerate(temp_points):
-                flag = True
-                for j, temp_point_1 in enumerate(temp_points):
-                    if j == i:
-                        continue
-                    if temp_point_0[1] > temp_point_1[1]:
-                        flag = False
-                        break
-                if flag:
-                    target_points.append([temp_point_0[0], temp_point_0[1]])
-            ##################sh*t code to sort the point###############################################
+    def callback(self, image_in):
+        image_cv = self._bridge.imgmsg_to_cv2(image_in, desired_encoding='bgr8')
 
-            for target_point in target_points:
-                # cv2.circle(image_cv,(target_point[0],target_point[1]),1,(0,255,0),4)
-                rospy.loginfo("x:{}, y:{}".format(target_point[0],target_point[1]))
-            
-            # 投影变换
-            rows, cols, _ = image_cv.shape
-            p1 = np.float32([
-                [target_points[0][0],target_points[0][1]], 
-                [target_points[1][0],target_points[1][1]],
-                [target_points[2][0],target_points[2][1]],
-                [target_points[3][0],target_points[3][1]]
-            ])
-            p2 = np.float32([
-                [400,400], 
-                [600,400],
-                [400,600],
-                [600,600]
-            ])
-            M = cv2.getPerspectiveTransform(p1,p2)
-            image_cv = cv2.warpPerspective(image_cv, M, (1000, 1000))
+        image_cv = self.preprocess(image_cv)
+
+        crosspoints = self.findboard(image_cv)
+
+        if len(crosspoints) == 0:
+            rospy.loginfo("No board found!")
+            self._OXresult = [
+                [' ', ' ', ' '],
+                [' ', ' ', ' '],
+                [' ', ' ', ' ']
+            ]
+            self._OXstate.data = [
+                0, 0, 0,
+                0, 0, 0,
+                0, 0, 0
+            ]
+        else:
+            for crosspoint in crosspoints:
+                # cv2.circle(image_cv,(crosspoint[0],crosspoint[1]),1,(0,255,0),4)
+                rospy.loginfo("x:{}, y:{}".format(crosspoint[0],crosspoint[1]))
+
+            image_cv = self.projection(crosspoints, image_cv)
 
             for i in range(3):
                 for j in range(3):
-                    OXsymNum = self._predicter.predict_tf(image_cv[200 + i*200 + 20: 200 + i*200 + 180, 200 + j*200 + 20: 200 + j*200 + 180])
+                    OXsymNum = self._predicter.predict_tf(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190])
                     if OXsymNum == 15 or OXsymNum == 4:
                         self._OXresult[i][j] = 'O'
                         self._OXstate.data[i*3+j] = 2
@@ -210,15 +255,20 @@ class Imager():
                     else:
                         self._OXresult[i][j] = ' '
                         self._OXstate.data[i*3+j] = 1
+                        
                 
-                
-        # tmp = cv2.cvtColor(image_cv[420:580, 620:780], cv2.COLOR_RGB2GRAY)
-        # _, tmp = cv2.threshold(tmp,238,255,cv2.THRESH_BINARY)
-        # tmp = cv2.copyMakeBorder(tmp,20,20,20,20, cv2.BORDER_CONSTANT,value=255)
-        # tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
-        result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
-        self._pub.publish(result)
-        self._pub.publish(self._OXstate)
+        i = 0
+        j = 2
+        tmp = cv2.cvtColor(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190], cv2.COLOR_RGB2GRAY)
+        _, tmp = cv2.threshold(tmp,238,255,cv2.THRESH_BINARY)
+        tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
+        tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
+        result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
+
+
+        # result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
+        self._pub0.publish(result)
+        self._pub1.publish(self._OXstate)
         print(self._OXresult[0])
         print(self._OXresult[1])
         print(self._OXresult[2])
