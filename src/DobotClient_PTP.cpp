@@ -1,17 +1,17 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include "dobot/SetCmdTimeout.h"
-#include "dobot/SetQueuedCmdClear.h"
-#include "dobot/SetQueuedCmdStartExec.h"
-#include "dobot/SetQueuedCmdForceStopExec.h"
-#include "dobot/GetDeviceVersion.h"
+#include "doodbot/SetCmdTimeout.h"
+#include "doodbot/SetQueuedCmdClear.h"
+#include "doodbot/SetQueuedCmdStartExec.h"
+#include "doodbot/SetQueuedCmdForceStopExec.h"
+#include "doodbot/GetDeviceVersion.h"
 
-#include "dobot/SetEndEffectorParams.h"
-#include "dobot/SetPTPJointParams.h"
-#include "dobot/SetPTPCoordinateParams.h"
-#include "dobot/SetPTPJumpParams.h"
-#include "dobot/SetPTPCommonParams.h"
-#include "dobot/SetPTPCmd.h"
+#include "doodbot/SetEndEffectorParams.h"
+#include "doodbot/SetPTPJointParams.h"
+#include "doodbot/SetPTPCoordinateParams.h"
+#include "doodbot/SetPTPJumpParams.h"
+#include "doodbot/SetPTPCommonParams.h"
+#include "doodbot/SetPTPCmd.h"
 
 int main(int argc, char **argv)
 {
@@ -21,9 +21,9 @@ int main(int argc, char **argv)
     ros::ServiceClient client;
 
     // SetCmdTimeout
-    client = n.serviceClient<dobot::SetCmdTimeout>("/DobotServer/SetCmdTimeout");
+    client = n.serviceClient<doodbot::SetCmdTimeout>("/DobotServer/SetCmdTimeout");
     client.waitForExistence();
-    dobot::SetCmdTimeout srv1;
+    doodbot::SetCmdTimeout srv1;
     srv1.request.timeout = 3000;
     if (client.call(srv1) == false) {
         ROS_ERROR("Failed to call SetCmdTimeout. Maybe DobotServer isn't started yet!");
@@ -31,18 +31,18 @@ int main(int argc, char **argv)
     }
 
     // Clear the command queue
-    client = n.serviceClient<dobot::SetQueuedCmdClear>("/DobotServer/SetQueuedCmdClear");
-    dobot::SetQueuedCmdClear srv2;
+    client = n.serviceClient<doodbot::SetQueuedCmdClear>("/DobotServer/SetQueuedCmdClear");
+    doodbot::SetQueuedCmdClear srv2;
     client.call(srv2);
 
     // Start running the command queue
-    client = n.serviceClient<dobot::SetQueuedCmdStartExec>("/DobotServer/SetQueuedCmdStartExec");
-    dobot::SetQueuedCmdStartExec srv3;
+    client = n.serviceClient<doodbot::SetQueuedCmdStartExec>("/DobotServer/SetQueuedCmdStartExec");
+    doodbot::SetQueuedCmdStartExec srv3;
     client.call(srv3);
 
     // Get device version information
-    client = n.serviceClient<dobot::GetDeviceVersion>("/DobotServer/GetDeviceVersion");
-    dobot::GetDeviceVersion srv4;
+    client = n.serviceClient<doodbot::GetDeviceVersion>("/DobotServer/GetDeviceVersion");
+    doodbot::GetDeviceVersion srv4;
     client.call(srv4);
     if (srv4.response.result == 0) {
         ROS_INFO("Device version:%d.%d.%d", srv4.response.majorVersion, srv4.response.minorVersion, srv4.response.revision);
@@ -51,8 +51,8 @@ int main(int argc, char **argv)
     }
 
     // Set end effector parameters
-    client = n.serviceClient<dobot::SetEndEffectorParams>("/DobotServer/SetEndEffectorParams");
-    dobot::SetEndEffectorParams srv5;
+    client = n.serviceClient<doodbot::SetEndEffectorParams>("/DobotServer/SetEndEffectorParams");
+    doodbot::SetEndEffectorParams srv5;
     srv5.request.xBias = 70;
     srv5.request.yBias = 0;
     srv5.request.zBias = 0;
@@ -60,8 +60,8 @@ int main(int argc, char **argv)
 
     // Set PTP joint parameters
     do {
-        client = n.serviceClient<dobot::SetPTPJointParams>("/DobotServer/SetPTPJointParams");
-        dobot::SetPTPJointParams srv;
+        client = n.serviceClient<doodbot::SetPTPJointParams>("/DobotServer/SetPTPJointParams");
+        doodbot::SetPTPJointParams srv;
 
         for (int i = 0; i < 4; i++) {
             srv.request.velocity.push_back(100);
@@ -74,8 +74,8 @@ int main(int argc, char **argv)
 
     // Set PTP coordinate parameters
     do {
-        client = n.serviceClient<dobot::SetPTPCoordinateParams>("/DobotServer/SetPTPCoordinateParams");
-        dobot::SetPTPCoordinateParams srv;
+        client = n.serviceClient<doodbot::SetPTPCoordinateParams>("/DobotServer/SetPTPCoordinateParams");
+        doodbot::SetPTPCoordinateParams srv;
 
         srv.request.xyzVelocity = 100;
         srv.request.xyzAcceleration = 100;
@@ -86,8 +86,8 @@ int main(int argc, char **argv)
 
     // Set PTP jump parameters
     do {
-        client = n.serviceClient<dobot::SetPTPJumpParams>("/DobotServer/SetPTPJumpParams");
-        dobot::SetPTPJumpParams srv;
+        client = n.serviceClient<doodbot::SetPTPJumpParams>("/DobotServer/SetPTPJumpParams");
+        doodbot::SetPTPJumpParams srv;
 
         srv.request.jumpHeight = 20;
         srv.request.zLimit = 200;
@@ -96,16 +96,16 @@ int main(int argc, char **argv)
 
     // Set PTP common parameters
     do {
-        client = n.serviceClient<dobot::SetPTPCommonParams>("/DobotServer/SetPTPCommonParams");
-        dobot::SetPTPCommonParams srv;
+        client = n.serviceClient<doodbot::SetPTPCommonParams>("/DobotServer/SetPTPCommonParams");
+        doodbot::SetPTPCommonParams srv;
 
         srv.request.velocityRatio = 50;
         srv.request.accelerationRatio = 50;
         client.call(srv);
     } while (0);
 
-    client = n.serviceClient<dobot::SetPTPCmd>("/DobotServer/SetPTPCmd");
-    dobot::SetPTPCmd srv;
+    client = n.serviceClient<doodbot::SetPTPCmd>("/DobotServer/SetPTPCmd");
+    doodbot::SetPTPCmd srv;
 
     while (ros::ok()) {
         // The first point

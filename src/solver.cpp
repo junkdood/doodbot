@@ -1,4 +1,4 @@
-#include "dobot/solver.h"
+#include "doodbot/solver.h"
 
 DirectCollocationSolver::DirectCollocationSolver(const arm_model& _model, const constraint_value& _constraint){
     model = _model;

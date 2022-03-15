@@ -2,15 +2,15 @@
 #include "std_msgs/Header.h"
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/Point.h"
-#include "dobot/Board.h"
+#include "doodbot/Board.h"
 
-#include "dobot/Hardware.h"
-#include "dobot/solver.h"
-#include "dobot/player.h"
+#include "doodbot/Hardware.h"
+#include "doodbot/solver.h"
+#include "doodbot/player.h"
 
 
 
-void msgCallback(const dobot::Board::ConstPtr &msg){
+void msgCallback(const doodbot::Board::ConstPtr &msg){
     std::cout << "msg->grid_size=" << msg->grid_size << std::endl;
     ChessPlayer player;
     player.SetState(1);

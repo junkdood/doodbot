@@ -16,7 +16,7 @@ def get_letter(num):
 
 class Predict(object):
     def __init__(self):
-        latest = tf.train.latest_checkpoint('./src/dobot/CNNdata/modelckpt')
+        latest = tf.train.latest_checkpoint('./src/doodbot/CNNdata/modelckpt')
         self.cnn = CNN()
         self.cnn.model.load_weights(latest)
 

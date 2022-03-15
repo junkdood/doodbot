@@ -1,9 +1,9 @@
 #include "ros/ros.h"
 #include <cstdlib>
-#include "dobot/SetCmdTimeout.h"
-#include "dobot/GetPose.h"
-#include "dobot/GetHOMEParams.h"
-#include "dobot/SetHOMEParams.h"
+#include "doodbot/SetCmdTimeout.h"
+#include "doodbot/GetPose.h"
+#include "doodbot/GetHOMEParams.h"
+#include "doodbot/SetHOMEParams.h"
 
 int main(int argc, char **argv)
 {
@@ -12,25 +12,25 @@ int main(int argc, char **argv)
 
     // SetCmdTimeout
     ros::ServiceClient client;
-    client = n.serviceClient<dobot::SetCmdTimeout>("/DobotServer/SetCmdTimeout");
+    client = n.serviceClient<doodbot::SetCmdTimeout>("/DobotServer/SetCmdTimeout");
     client.waitForExistence();
-    dobot::SetCmdTimeout srv;
+    doodbot::SetCmdTimeout srv;
     srv.request.timeout = 3000;
     if (client.call(srv) == false) {
         ROS_ERROR("Failed to call SetCmdTimeout. Maybe DobotServer isn't started yet!");
         return -1;
     }
     do{
-        client = n.serviceClient<dobot::GetPose>("/DobotServer/GetPose");
-        dobot::GetPose srv;
+        client = n.serviceClient<doodbot::GetPose>("/DobotServer/GetPose");
+        doodbot::GetPose srv;
         if (client.call(srv) == false) {
             ROS_ERROR("Failed to call GetPose.");
             return -1;
         }
         ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\njointAngle:\n%f\n%f\n%f\n%f\n", srv.response.x, srv.response.y, srv.response.z, srv.response.r, srv.response.jointAngle[0], srv.response.jointAngle[1], srv.response.jointAngle[2], srv.response.jointAngle[3]);
         
-        // client = n.serviceClient<dobot::GetHOMEParams>("/DobotServer/GetHOMEParams");
-        // dobot::GetHOMEParams srv1;
+        // client = n.serviceClient<doodbot::GetHOMEParams>("/DobotServer/GetHOMEParams");
+        // doodbot::GetHOMEParams srv1;
         // if (client.call(srv1) == false) {
         //     ROS_ERROR("Failed to call GetHOMEParams.");
         //     return -1;

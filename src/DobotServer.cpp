@@ -6,9 +6,9 @@
 /*
  * Cmd timeout
  */
-#include "dobot/SetCmdTimeout.h"
+#include "doodbot/SetCmdTimeout.h"
 
-bool SetCmdTimeoutService(dobot::SetCmdTimeout::Request &req, dobot::SetCmdTimeout::Response &res)
+bool SetCmdTimeoutService(doodbot::SetCmdTimeout::Request &req, doodbot::SetCmdTimeout::Response &res)
 {
     res.result = SetCmdTimeout(req.timeout);
 
@@ -26,12 +26,12 @@ void InitCmdTimeoutServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> 
 /*
  * Device information
  */
-#include "dobot/GetDeviceSN.h"
-#include "dobot/SetDeviceName.h"
-#include "dobot/GetDeviceName.h"
-#include "dobot/GetDeviceVersion.h"
+#include "doodbot/GetDeviceSN.h"
+#include "doodbot/SetDeviceName.h"
+#include "doodbot/GetDeviceName.h"
+#include "doodbot/GetDeviceVersion.h"
 
-bool GetDeviceSNService(dobot::GetDeviceSN::Request &req, dobot::GetDeviceSN::Response &res)
+bool GetDeviceSNService(doodbot::GetDeviceSN::Request &req, doodbot::GetDeviceSN::Response &res)
 {
     char deviceSN[256];
 
@@ -45,14 +45,14 @@ bool GetDeviceSNService(dobot::GetDeviceSN::Request &req, dobot::GetDeviceSN::Re
     return true;
 }
 
-bool SetDeviceNameService(dobot::SetDeviceName::Request &req, dobot::SetDeviceName::Response &res)
+bool SetDeviceNameService(doodbot::SetDeviceName::Request &req, doodbot::SetDeviceName::Response &res)
 {
     res.result = SetDeviceName(req.deviceName.data.c_str());
 
     return true;
 }
 
-bool GetDeviceNameService(dobot::GetDeviceName::Request &req, dobot::GetDeviceName::Response &res)
+bool GetDeviceNameService(doodbot::GetDeviceName::Request &req, doodbot::GetDeviceName::Response &res)
 {
     char deviceName[256];
 
@@ -66,7 +66,7 @@ bool GetDeviceNameService(dobot::GetDeviceName::Request &req, dobot::GetDeviceNa
     return true;
 }
 
-bool GetDeviceVersionService(dobot::GetDeviceVersion::Request &req, dobot::GetDeviceVersion::Response &res)
+bool GetDeviceVersionService(doodbot::GetDeviceVersion::Request &req, doodbot::GetDeviceVersion::Response &res)
 {
     uint8_t majorVersion, minorVersion, revision;
 
@@ -97,9 +97,9 @@ void InitDeviceInfoServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> 
 /*
  * Pose
  */
-#include "dobot/GetPose.h"
+#include "doodbot/GetPose.h"
 
-bool GetPoseService(dobot::GetPose::Request &req, dobot::GetPose::Response &res)
+bool GetPoseService(doodbot::GetPose::Request &req, doodbot::GetPose::Response &res)
 {
     Pose pose;
 
@@ -128,10 +128,10 @@ void InitPoseServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &serve
 /*
  * Alarms
  */
-#include "dobot/GetAlarmsState.h"
-#include "dobot/ClearAllAlarmsState.h"
+#include "doodbot/GetAlarmsState.h"
+#include "doodbot/ClearAllAlarmsState.h"
 
-bool GetAlarmsStateService(dobot::GetAlarmsState::Request &req, dobot::GetAlarmsState::Response &res)
+bool GetAlarmsStateService(doodbot::GetAlarmsState::Request &req, doodbot::GetAlarmsState::Response &res)
 {
     uint8_t alarmsState[128];
     uint32_t len;
@@ -146,7 +146,7 @@ bool GetAlarmsStateService(dobot::GetAlarmsState::Request &req, dobot::GetAlarms
     return true;
 }
 
-bool ClearAllAlarmsStateService(dobot::ClearAllAlarmsState::Request &req, dobot::ClearAllAlarmsState::Response &res)
+bool ClearAllAlarmsStateService(doodbot::ClearAllAlarmsState::Request &req, doodbot::ClearAllAlarmsState::Response &res)
 {
     res.result = ClearAllAlarmsState();
 
@@ -166,11 +166,11 @@ void InitAlarmsServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &ser
 /*
  * HOME
  */
-#include "dobot/SetHOMEParams.h"
-#include "dobot/GetHOMEParams.h"
-#include "dobot/SetHOMECmd.h"
+#include "doodbot/SetHOMEParams.h"
+#include "doodbot/GetHOMEParams.h"
+#include "doodbot/SetHOMECmd.h"
 
-bool SetHOMEParamsService(dobot::SetHOMEParams::Request &req, dobot::SetHOMEParams::Response &res)
+bool SetHOMEParamsService(doodbot::SetHOMEParams::Request &req, doodbot::SetHOMEParams::Response &res)
 {
     HOMEParams params;
     uint64_t queuedCmdIndex;
@@ -188,7 +188,7 @@ bool SetHOMEParamsService(dobot::SetHOMEParams::Request &req, dobot::SetHOMEPara
     return true;
 }
 
-bool GetHOMEParamsService(dobot::GetHOMEParams::Request &req, dobot::GetHOMEParams::Response &res)
+bool GetHOMEParamsService(doodbot::GetHOMEParams::Request &req, doodbot::GetHOMEParams::Response &res)
 {
     HOMEParams params;
 
@@ -203,7 +203,7 @@ bool GetHOMEParamsService(dobot::GetHOMEParams::Request &req, dobot::GetHOMEPara
     return true;
 }
 
-bool SetHOMECmdService(dobot::SetHOMECmd::Request &req, dobot::SetHOMECmd::Response &res)
+bool SetHOMECmdService(doodbot::SetHOMECmd::Request &req, doodbot::SetHOMECmd::Response &res)
 {
     HOMECmd cmd;
     uint64_t queuedCmdIndex;
@@ -231,16 +231,16 @@ void InitHOMEServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &serve
 /*
  * End effector
  */
-#include "dobot/SetEndEffectorParams.h"
-#include "dobot/GetEndEffectorParams.h"
-#include "dobot/SetEndEffectorLaser.h"
-#include "dobot/GetEndEffectorLaser.h"
-#include "dobot/SetEndEffectorSuctionCup.h"
-#include "dobot/GetEndEffectorSuctionCup.h"
-#include "dobot/SetEndEffectorGripper.h"
-#include "dobot/GetEndEffectorGripper.h"
+#include "doodbot/SetEndEffectorParams.h"
+#include "doodbot/GetEndEffectorParams.h"
+#include "doodbot/SetEndEffectorLaser.h"
+#include "doodbot/GetEndEffectorLaser.h"
+#include "doodbot/SetEndEffectorSuctionCup.h"
+#include "doodbot/GetEndEffectorSuctionCup.h"
+#include "doodbot/SetEndEffectorGripper.h"
+#include "doodbot/GetEndEffectorGripper.h"
 
-bool SetEndEffectorParamsService(dobot::SetEndEffectorParams::Request &req, dobot::SetEndEffectorParams::Response &res)
+bool SetEndEffectorParamsService(doodbot::SetEndEffectorParams::Request &req, doodbot::SetEndEffectorParams::Response &res)
 {
     EndEffectorParams params;
     uint64_t queuedCmdIndex;
@@ -257,7 +257,7 @@ bool SetEndEffectorParamsService(dobot::SetEndEffectorParams::Request &req, dobo
     return true;
 }
 
-bool GetEndEffectorParamsService(dobot::GetEndEffectorParams::Request &req, dobot::GetEndEffectorParams::Response &res)
+bool GetEndEffectorParamsService(doodbot::GetEndEffectorParams::Request &req, doodbot::GetEndEffectorParams::Response &res)
 {
     EndEffectorParams params;
 
@@ -271,7 +271,7 @@ bool GetEndEffectorParamsService(dobot::GetEndEffectorParams::Request &req, dobo
     return true;
 }
 
-bool SetEndEffectorLaserService(dobot::SetEndEffectorLaser::Request &req, dobot::SetEndEffectorLaser::Response &res)
+bool SetEndEffectorLaserService(doodbot::SetEndEffectorLaser::Request &req, doodbot::SetEndEffectorLaser::Response &res)
 {
     uint64_t queuedCmdIndex;
 
@@ -283,7 +283,7 @@ bool SetEndEffectorLaserService(dobot::SetEndEffectorLaser::Request &req, dobot:
     return true;
 }
 
-bool GetEndEffectorLaserService(dobot::GetEndEffectorLaser::Request &req, dobot::GetEndEffectorLaser::Response &res)
+bool GetEndEffectorLaserService(doodbot::GetEndEffectorLaser::Request &req, doodbot::GetEndEffectorLaser::Response &res)
 {
     bool enableCtrl, on;
 
@@ -296,7 +296,7 @@ bool GetEndEffectorLaserService(dobot::GetEndEffectorLaser::Request &req, dobot:
     return true;
 }
 
-bool SetEndEffectorSuctionCupService(dobot::SetEndEffectorSuctionCup::Request &req, dobot::SetEndEffectorSuctionCup::Response &res)
+bool SetEndEffectorSuctionCupService(doodbot::SetEndEffectorSuctionCup::Request &req, doodbot::SetEndEffectorSuctionCup::Response &res)
 {
     uint64_t queuedCmdIndex;
 
@@ -308,7 +308,7 @@ bool SetEndEffectorSuctionCupService(dobot::SetEndEffectorSuctionCup::Request &r
     return true;
 }
 
-bool GetEndEffectorSuctionCupService(dobot::GetEndEffectorSuctionCup::Request &req, dobot::GetEndEffectorSuctionCup::Response &res)
+bool GetEndEffectorSuctionCupService(doodbot::GetEndEffectorSuctionCup::Request &req, doodbot::GetEndEffectorSuctionCup::Response &res)
 {
     bool enableCtrl, suck;
 
@@ -321,7 +321,7 @@ bool GetEndEffectorSuctionCupService(dobot::GetEndEffectorSuctionCup::Request &r
     return true;
 }
 
-bool SetEndEffectorGripperService(dobot::SetEndEffectorGripper::Request &req, dobot::SetEndEffectorGripper::Response &res)
+bool SetEndEffectorGripperService(doodbot::SetEndEffectorGripper::Request &req, doodbot::SetEndEffectorGripper::Response &res)
 {
     uint64_t queuedCmdIndex;
 
@@ -333,7 +333,7 @@ bool SetEndEffectorGripperService(dobot::SetEndEffectorGripper::Request &req, do
     return true;
 }
 
-bool GetEndEffectorGripperService(dobot::GetEndEffectorGripper::Request &req, dobot::GetEndEffectorGripper::Response &res)
+bool GetEndEffectorGripperService(doodbot::GetEndEffectorGripper::Request &req, doodbot::GetEndEffectorGripper::Response &res)
 {
     bool enableCtrl, grip;
 
@@ -371,15 +371,15 @@ void InitEndEffectorServices(ros::NodeHandle &n, std::vector<ros::ServiceServer>
 /*
  * JOG
  */
-#include "dobot/SetJOGJointParams.h"
-#include "dobot/GetJOGJointParams.h"
-#include "dobot/SetJOGCoordinateParams.h"
-#include "dobot/GetJOGCoordinateParams.h"
-#include "dobot/SetJOGCommonParams.h"
-#include "dobot/GetJOGCommonParams.h"
-#include "dobot/SetJOGCmd.h"
+#include "doodbot/SetJOGJointParams.h"
+#include "doodbot/GetJOGJointParams.h"
+#include "doodbot/SetJOGCoordinateParams.h"
+#include "doodbot/GetJOGCoordinateParams.h"
+#include "doodbot/SetJOGCommonParams.h"
+#include "doodbot/GetJOGCommonParams.h"
+#include "doodbot/SetJOGCmd.h"
 
-bool SetJOGJointParamsService(dobot::SetJOGJointParams::Request &req, dobot::SetJOGJointParams::Response &res)
+bool SetJOGJointParamsService(doodbot::SetJOGJointParams::Request &req, doodbot::SetJOGJointParams::Response &res)
 {
     JOGJointParams params;
     uint64_t queuedCmdIndex;
@@ -398,7 +398,7 @@ bool SetJOGJointParamsService(dobot::SetJOGJointParams::Request &req, dobot::Set
     return true;
 }
 
-bool GetJOGJointParamsService(dobot::GetJOGJointParams::Request &req, dobot::GetJOGJointParams::Response &res)
+bool GetJOGJointParamsService(doodbot::GetJOGJointParams::Request &req, doodbot::GetJOGJointParams::Response &res)
 {
     JOGJointParams params;
 
@@ -413,7 +413,7 @@ bool GetJOGJointParamsService(dobot::GetJOGJointParams::Request &req, dobot::Get
     return true;
 }
 
-bool SetJOGCoordinateParamsService(dobot::SetJOGCoordinateParams::Request &req, dobot::SetJOGCoordinateParams::Response &res)
+bool SetJOGCoordinateParamsService(doodbot::SetJOGCoordinateParams::Request &req, doodbot::SetJOGCoordinateParams::Response &res)
 {
     JOGCoordinateParams params;
     uint64_t queuedCmdIndex;
@@ -432,7 +432,7 @@ bool SetJOGCoordinateParamsService(dobot::SetJOGCoordinateParams::Request &req, 
     return true;
 }
 
-bool GetJOGCoordinateParamsService(dobot::GetJOGCoordinateParams::Request &req, dobot::GetJOGCoordinateParams::Response &res)
+bool GetJOGCoordinateParamsService(doodbot::GetJOGCoordinateParams::Request &req, doodbot::GetJOGCoordinateParams::Response &res)
 {
     JOGCoordinateParams params;
 
@@ -447,7 +447,7 @@ bool GetJOGCoordinateParamsService(dobot::GetJOGCoordinateParams::Request &req, 
     return true;
 }
 
-bool SetJOGCommonParamsService(dobot::SetJOGCommonParams::Request &req, dobot::SetJOGCommonParams::Response &res)
+bool SetJOGCommonParamsService(doodbot::SetJOGCommonParams::Request &req, doodbot::SetJOGCommonParams::Response &res)
 {
     JOGCommonParams params;
     uint64_t queuedCmdIndex;
@@ -462,7 +462,7 @@ bool SetJOGCommonParamsService(dobot::SetJOGCommonParams::Request &req, dobot::S
     return true;
 }
 
-bool GetJOGCommonParamsService(dobot::GetJOGCommonParams::Request &req, dobot::GetJOGCommonParams::Response &res)
+bool GetJOGCommonParamsService(doodbot::GetJOGCommonParams::Request &req, doodbot::GetJOGCommonParams::Response &res)
 {
     JOGCommonParams params;
 
@@ -475,7 +475,7 @@ bool GetJOGCommonParamsService(dobot::GetJOGCommonParams::Request &req, dobot::G
     return true;
 }
 
-bool SetJOGCmdService(dobot::SetJOGCmd::Request &req, dobot::SetJOGCmd::Response &res)
+bool SetJOGCmdService(doodbot::SetJOGCmd::Request &req, doodbot::SetJOGCmd::Response &res)
 {
     JOGCmd cmd;
     uint64_t queuedCmdIndex;
@@ -513,17 +513,17 @@ void InitJOGServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &server
 /*
  * PTP
  */
-#include "dobot/SetPTPJointParams.h"
-#include "dobot/GetPTPJointParams.h"
-#include "dobot/SetPTPCoordinateParams.h"
-#include "dobot/GetPTPCoordinateParams.h"
-#include "dobot/SetPTPJumpParams.h"
-#include "dobot/GetPTPJumpParams.h"
-#include "dobot/SetPTPCommonParams.h"
-#include "dobot/GetPTPCommonParams.h"
-#include "dobot/SetPTPCmd.h"
+#include "doodbot/SetPTPJointParams.h"
+#include "doodbot/GetPTPJointParams.h"
+#include "doodbot/SetPTPCoordinateParams.h"
+#include "doodbot/GetPTPCoordinateParams.h"
+#include "doodbot/SetPTPJumpParams.h"
+#include "doodbot/GetPTPJumpParams.h"
+#include "doodbot/SetPTPCommonParams.h"
+#include "doodbot/GetPTPCommonParams.h"
+#include "doodbot/SetPTPCmd.h"
 
-bool SetPTPJointParamsService(dobot::SetPTPJointParams::Request &req, dobot::SetPTPJointParams::Response &res)
+bool SetPTPJointParamsService(doodbot::SetPTPJointParams::Request &req, doodbot::SetPTPJointParams::Response &res)
 {
     PTPJointParams params;
     uint64_t queuedCmdIndex;
@@ -542,7 +542,7 @@ bool SetPTPJointParamsService(dobot::SetPTPJointParams::Request &req, dobot::Set
     return true;
 }
 
-bool GetPTPJointParamsService(dobot::GetPTPJointParams::Request &req, dobot::GetPTPJointParams::Response &res)
+bool GetPTPJointParamsService(doodbot::GetPTPJointParams::Request &req, doodbot::GetPTPJointParams::Response &res)
 {
     PTPJointParams params;
 
@@ -557,7 +557,7 @@ bool GetPTPJointParamsService(dobot::GetPTPJointParams::Request &req, dobot::Get
     return true;
 }
 
-bool SetPTPCoordinateParamsService(dobot::SetPTPCoordinateParams::Request &req, dobot::SetPTPCoordinateParams::Response &res)
+bool SetPTPCoordinateParamsService(doodbot::SetPTPCoordinateParams::Request &req, doodbot::SetPTPCoordinateParams::Response &res)
 {
     PTPCoordinateParams params;
     uint64_t queuedCmdIndex;
@@ -574,7 +574,7 @@ bool SetPTPCoordinateParamsService(dobot::SetPTPCoordinateParams::Request &req, 
     return true;
 }
 
-bool GetPTPCoordinateParamsService(dobot::GetPTPCoordinateParams::Request &req, dobot::GetPTPCoordinateParams::Response &res)
+bool GetPTPCoordinateParamsService(doodbot::GetPTPCoordinateParams::Request &req, doodbot::GetPTPCoordinateParams::Response &res)
 {
     PTPCoordinateParams params;
 
@@ -589,7 +589,7 @@ bool GetPTPCoordinateParamsService(dobot::GetPTPCoordinateParams::Request &req, 
     return true;
 }
 
-bool SetPTPJumpParamsService(dobot::SetPTPJumpParams::Request &req, dobot::SetPTPJumpParams::Response &res)
+bool SetPTPJumpParamsService(doodbot::SetPTPJumpParams::Request &req, doodbot::SetPTPJumpParams::Response &res)
 {
     PTPJumpParams params;
     uint64_t queuedCmdIndex;
@@ -604,7 +604,7 @@ bool SetPTPJumpParamsService(dobot::SetPTPJumpParams::Request &req, dobot::SetPT
     return true;
 }
 
-bool GetPTPJumpParamsService(dobot::GetPTPJumpParams::Request &req, dobot::GetPTPJumpParams::Response &res)
+bool GetPTPJumpParamsService(doodbot::GetPTPJumpParams::Request &req, doodbot::GetPTPJumpParams::Response &res)
 {
     PTPJumpParams params;
 
@@ -617,7 +617,7 @@ bool GetPTPJumpParamsService(dobot::GetPTPJumpParams::Request &req, dobot::GetPT
     return true;
 }
 
-bool SetPTPCommonParamsService(dobot::SetPTPCommonParams::Request &req, dobot::SetPTPCommonParams::Response &res)
+bool SetPTPCommonParamsService(doodbot::SetPTPCommonParams::Request &req, doodbot::SetPTPCommonParams::Response &res)
 {
     PTPCommonParams params;
     uint64_t queuedCmdIndex;
@@ -632,7 +632,7 @@ bool SetPTPCommonParamsService(dobot::SetPTPCommonParams::Request &req, dobot::S
     return true;
 }
 
-bool GetPTPCommonParamsService(dobot::GetPTPCommonParams::Request &req, dobot::GetPTPCommonParams::Response &res)
+bool GetPTPCommonParamsService(doodbot::GetPTPCommonParams::Request &req, doodbot::GetPTPCommonParams::Response &res)
 {
     PTPCommonParams params;
 
@@ -645,7 +645,7 @@ bool GetPTPCommonParamsService(dobot::GetPTPCommonParams::Request &req, dobot::G
     return true;
 }
 
-bool SetPTPCmdService(dobot::SetPTPCmd::Request &req, dobot::SetPTPCmd::Response &res)
+bool SetPTPCmdService(doodbot::SetPTPCmd::Request &req, doodbot::SetPTPCmd::Response &res)
 {
     PTPCmd cmd;
     uint64_t queuedCmdIndex;
@@ -690,11 +690,11 @@ void InitPTPServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &server
 /*
  * CP
  */
-#include "dobot/SetCPParams.h"
-#include "dobot/GetCPParams.h"
-#include "dobot/SetCPCmd.h"
+#include "doodbot/SetCPParams.h"
+#include "doodbot/GetCPParams.h"
+#include "doodbot/SetCPCmd.h"
 
-bool SetCPParamsService(dobot::SetCPParams::Request &req, dobot::SetCPParams::Response &res)
+bool SetCPParamsService(doodbot::SetCPParams::Request &req, doodbot::SetCPParams::Response &res)
 {
     CPParams params;
     uint64_t queuedCmdIndex;
@@ -711,7 +711,7 @@ bool SetCPParamsService(dobot::SetCPParams::Request &req, dobot::SetCPParams::Re
     return true;
 }
 
-bool GetCPParamsService(dobot::GetCPParams::Request &req, dobot::GetCPParams::Response &res)
+bool GetCPParamsService(doodbot::GetCPParams::Request &req, doodbot::GetCPParams::Response &res)
 {
     CPParams params;
 
@@ -726,7 +726,7 @@ bool GetCPParamsService(dobot::GetCPParams::Request &req, dobot::GetCPParams::Re
     return true;
 }
 
-bool SetCPCmdService(dobot::SetCPCmd::Request &req, dobot::SetCPCmd::Response &res)
+bool SetCPCmdService(doodbot::SetCPCmd::Request &req, doodbot::SetCPCmd::Response &res)
 {
     CPCmd cmd;
     uint64_t queuedCmdIndex;
@@ -760,11 +760,11 @@ void InitCPServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &serverV
 /*
  * ARC
  */
-#include "dobot/SetARCParams.h"
-#include "dobot/GetARCParams.h"
-#include "dobot/SetARCCmd.h"
+#include "doodbot/SetARCParams.h"
+#include "doodbot/GetARCParams.h"
+#include "doodbot/SetARCCmd.h"
 
-bool SetARCParamsService(dobot::SetARCParams::Request &req, dobot::SetARCParams::Response &res)
+bool SetARCParamsService(doodbot::SetARCParams::Request &req, doodbot::SetARCParams::Response &res)
 {
     ARCParams params;
     uint64_t queuedCmdIndex;
@@ -781,7 +781,7 @@ bool SetARCParamsService(dobot::SetARCParams::Request &req, dobot::SetARCParams:
     return true;
 }
 
-bool GetARCParamsService(dobot::GetARCParams::Request &req, dobot::GetARCParams::Response &res)
+bool GetARCParamsService(doodbot::GetARCParams::Request &req, doodbot::GetARCParams::Response &res)
 {
     ARCParams params;
 
@@ -796,7 +796,7 @@ bool GetARCParamsService(dobot::GetARCParams::Request &req, dobot::GetARCParams:
     return true;
 }
 
-bool SetARCCmdService(dobot::SetARCCmd::Request &req, dobot::SetARCCmd::Response &res)
+bool SetARCCmdService(doodbot::SetARCCmd::Request &req, doodbot::SetARCCmd::Response &res)
 {
     ARCCmd cmd;
     uint64_t queuedCmdIndex;
@@ -833,9 +833,9 @@ void InitARCServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &server
 /*
  * WAIT
  */
-#include "dobot/SetWAITCmd.h"
+#include "doodbot/SetWAITCmd.h"
 
-bool SetWAITCmdService(dobot::SetWAITCmd::Request &req, dobot::SetWAITCmd::Response &res)
+bool SetWAITCmdService(doodbot::SetWAITCmd::Request &req, doodbot::SetWAITCmd::Response &res)
 {
     WAITCmd cmd;
     uint64_t queuedCmdIndex;
@@ -860,9 +860,9 @@ void InitWAITServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &serve
 /*
  * TRIG
  */
-#include "dobot/SetTRIGCmd.h"
+#include "doodbot/SetTRIGCmd.h"
 
-bool SetTRIGCmdService(dobot::SetTRIGCmd::Request &req, dobot::SetTRIGCmd::Response &res)
+bool SetTRIGCmdService(doodbot::SetTRIGCmd::Request &req, doodbot::SetTRIGCmd::Response &res)
 {
     TRIGCmd cmd;
     uint64_t queuedCmdIndex;
@@ -890,21 +890,21 @@ void InitTRIGServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &serve
 /*
  * EIO
  */
-#include "dobot/SetIOMultiplexing.h"
-#include "dobot/GetIOMultiplexing.h"
-#include "dobot/SetIODO.h"
-#include "dobot/GetIODO.h"
-#include "dobot/SetIOPWM.h"
-#include "dobot/GetIOPWM.h"
-#include "dobot/GetIODI.h"
-#include "dobot/GetIOADC.h"
-#include "dobot/SetEMotor.h"
-#include "dobot/SetInfraredSensor.h"
-#include "dobot/GetInfraredSensor.h"
-#include "dobot/SetColorSensor.h"
-#include "dobot/GetColorSensor.h"
+#include "doodbot/SetIOMultiplexing.h"
+#include "doodbot/GetIOMultiplexing.h"
+#include "doodbot/SetIODO.h"
+#include "doodbot/GetIODO.h"
+#include "doodbot/SetIOPWM.h"
+#include "doodbot/GetIOPWM.h"
+#include "doodbot/GetIODI.h"
+#include "doodbot/GetIOADC.h"
+#include "doodbot/SetEMotor.h"
+#include "doodbot/SetInfraredSensor.h"
+#include "doodbot/GetInfraredSensor.h"
+#include "doodbot/SetColorSensor.h"
+#include "doodbot/GetColorSensor.h"
 
-bool SetIOMultiplexingService(dobot::SetIOMultiplexing::Request &req, dobot::SetIOMultiplexing::Response &res)
+bool SetIOMultiplexingService(doodbot::SetIOMultiplexing::Request &req, doodbot::SetIOMultiplexing::Response &res)
 {
     IOMultiplexing ioMultiplexing;
     uint64_t queuedCmdIndex;
@@ -919,7 +919,7 @@ bool SetIOMultiplexingService(dobot::SetIOMultiplexing::Request &req, dobot::Set
     return true;
 }
 
-bool GetIOMultiplexingService(dobot::GetIOMultiplexing::Request &req, dobot::GetIOMultiplexing::Response &res)
+bool GetIOMultiplexingService(doodbot::GetIOMultiplexing::Request &req, doodbot::GetIOMultiplexing::Response &res)
 {
     IOMultiplexing ioMultiplexing;
 
@@ -932,7 +932,7 @@ bool GetIOMultiplexingService(dobot::GetIOMultiplexing::Request &req, dobot::Get
     return true;
 }
 
-bool SetIODOService(dobot::SetIODO::Request &req, dobot::SetIODO::Response &res)
+bool SetIODOService(doodbot::SetIODO::Request &req, doodbot::SetIODO::Response &res)
 {
     IODO ioDO;
     uint64_t queuedCmdIndex;
@@ -947,7 +947,7 @@ bool SetIODOService(dobot::SetIODO::Request &req, dobot::SetIODO::Response &res)
     return true;
 }
 
-bool GetIODOService(dobot::GetIODO::Request &req, dobot::GetIODO::Response &res)
+bool GetIODOService(doodbot::GetIODO::Request &req, doodbot::GetIODO::Response &res)
 {
     IODO ioDO;
 
@@ -960,7 +960,7 @@ bool GetIODOService(dobot::GetIODO::Request &req, dobot::GetIODO::Response &res)
     return true;
 }
 
-bool SetIOPWMService(dobot::SetIOPWM::Request &req, dobot::SetIOPWM::Response &res)
+bool SetIOPWMService(doodbot::SetIOPWM::Request &req, doodbot::SetIOPWM::Response &res)
 {
     IOPWM ioPWM;
     uint64_t queuedCmdIndex;
@@ -976,7 +976,7 @@ bool SetIOPWMService(dobot::SetIOPWM::Request &req, dobot::SetIOPWM::Response &r
     return true;
 }
 
-bool GetIOPWMService(dobot::GetIOPWM::Request &req, dobot::GetIOPWM::Response &res)
+bool GetIOPWMService(doodbot::GetIOPWM::Request &req, doodbot::GetIOPWM::Response &res)
 {
     IOPWM ioPWM;
 
@@ -990,7 +990,7 @@ bool GetIOPWMService(dobot::GetIOPWM::Request &req, dobot::GetIOPWM::Response &r
     return true;
 }
 
-bool GetIODIService(dobot::GetIODI::Request &req, dobot::GetIODI::Response &res)
+bool GetIODIService(doodbot::GetIODI::Request &req, doodbot::GetIODI::Response &res)
 {
     IODI ioDI;
 
@@ -1003,7 +1003,7 @@ bool GetIODIService(dobot::GetIODI::Request &req, dobot::GetIODI::Response &res)
     return true;
 }
 
-bool GetIOADCService(dobot::GetIOADC::Request &req, dobot::GetIOADC::Response &res)
+bool GetIOADCService(doodbot::GetIOADC::Request &req, doodbot::GetIOADC::Response &res)
 {
     IOADC ioADC;
 
@@ -1016,7 +1016,7 @@ bool GetIOADCService(dobot::GetIOADC::Request &req, dobot::GetIOADC::Response &r
     return true;
 }
 
-bool SetEMotorService(dobot::SetEMotor::Request &req, dobot::SetEMotor::Response &res)
+bool SetEMotorService(doodbot::SetEMotor::Request &req, doodbot::SetEMotor::Response &res)
 {
     EMotor eMotor;
     uint64_t queuedCmdIndex;
@@ -1033,7 +1033,7 @@ bool SetEMotorService(dobot::SetEMotor::Request &req, dobot::SetEMotor::Response
 }
 
 
-bool SetInfraredSensorService(dobot::SetInfraredSensor::Request &req, dobot::SetInfraredSensor::Response &res)
+bool SetInfraredSensorService(doodbot::SetInfraredSensor::Request &req, doodbot::SetInfraredSensor::Response &res)
 {
     InfraredPort infraredPort = InfraredPort(req.infraredPort);
     res.result = SetInfraredSensor(req.enableCtrl, infraredPort);
@@ -1041,7 +1041,7 @@ bool SetInfraredSensorService(dobot::SetInfraredSensor::Request &req, dobot::Set
     return true;
 }
 
-bool GetInfraredSensorService(dobot::GetInfraredSensor::Request &req, dobot::GetInfraredSensor::Response &res)
+bool GetInfraredSensorService(doodbot::GetInfraredSensor::Request &req, doodbot::GetInfraredSensor::Response &res)
 {
     uint8_t value;
     InfraredPort infraredPort = InfraredPort(req.infraredPort);
@@ -1053,7 +1053,7 @@ bool GetInfraredSensorService(dobot::GetInfraredSensor::Request &req, dobot::Get
     return true;
 }
 
-bool SetColorSensorService(dobot::SetColorSensor::Request &req, dobot::SetColorSensor::Response &res)
+bool SetColorSensorService(doodbot::SetColorSensor::Request &req, doodbot::SetColorSensor::Response &res)
 {
     ColorPort colorPort = ColorPort(req.colorPort);
     res.result = SetColorSensor(req.enableCtrl, colorPort);
@@ -1061,7 +1061,7 @@ bool SetColorSensorService(dobot::SetColorSensor::Request &req, dobot::SetColorS
     return true;
 }
 
-bool GetColorSensorService(dobot::GetColorSensor::Request &req, dobot::GetColorSensor::Response &res)
+bool GetColorSensorService(doodbot::GetColorSensor::Request &req, doodbot::GetColorSensor::Response &res)
 {
     uint8_t r;
     uint8_t g;
@@ -1111,33 +1111,33 @@ void InitEIOServices(ros::NodeHandle &n, std::vector<ros::ServiceServer> &server
 /*
  * Queued command control
  */
-#include "dobot/SetQueuedCmdStartExec.h"
-#include "dobot/SetQueuedCmdStopExec.h"
-#include "dobot/SetQueuedCmdForceStopExec.h"
-#include "dobot/SetQueuedCmdClear.h"
+#include "doodbot/SetQueuedCmdStartExec.h"
+#include "doodbot/SetQueuedCmdStopExec.h"
+#include "doodbot/SetQueuedCmdForceStopExec.h"
+#include "doodbot/SetQueuedCmdClear.h"
 
-bool SetQueuedCmdStartExecService(dobot::SetQueuedCmdStartExec::Request &req, dobot::SetQueuedCmdStartExec::Response &res)
+bool SetQueuedCmdStartExecService(doodbot::SetQueuedCmdStartExec::Request &req, doodbot::SetQueuedCmdStartExec::Response &res)
 {
     res.result = SetQueuedCmdStartExec();
 
     return true;
 }
 
-bool SetQueuedCmdStopExecService(dobot::SetQueuedCmdStopExec::Request &req, dobot::SetQueuedCmdStopExec::Response &res)
+bool SetQueuedCmdStopExecService(doodbot::SetQueuedCmdStopExec::Request &req, doodbot::SetQueuedCmdStopExec::Response &res)
 {
     res.result = SetQueuedCmdStopExec();
 
     return true;
 }
 
-bool SetQueuedCmdForceStopExecService(dobot::SetQueuedCmdForceStopExec::Request &req, dobot::SetQueuedCmdForceStopExec::Response &res)
+bool SetQueuedCmdForceStopExecService(doodbot::SetQueuedCmdForceStopExec::Request &req, doodbot::SetQueuedCmdForceStopExec::Response &res)
 {
     res.result = SetQueuedCmdForceStopExec();
 
     return true;
 }
 
-bool SetQueuedCmdClearService(dobot::SetQueuedCmdClear::Request &req, dobot::SetQueuedCmdClear::Response &res)
+bool SetQueuedCmdClearService(doodbot::SetQueuedCmdClear::Request &req, doodbot::SetQueuedCmdClear::Response &res)
 {
     res.result = SetQueuedCmdClear();
 

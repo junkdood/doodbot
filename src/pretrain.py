@@ -7,13 +7,13 @@ import gzip
 import numpy as np
 
 config = {
-    'check_path': "./src/dobot/CNNdata/modelckpt/cp-{epoch:04d}.ckpt",
+    'check_path': "./src/doodbot/CNNdata/modelckpt/cp-{epoch:04d}.ckpt",
     'class_num': 27,
     'data_sets': [
-        './src/dobot/CNNdata/dataset/emnist-letters-train-labels-idx1-ubyte.gz',
-        './src/dobot/CNNdata/dataset/emnist-letters-train-images-idx3-ubyte.gz',
-        './src/dobot/CNNdata/dataset/emnist-letters-test-labels-idx1-ubyte.gz',
-        './src/dobot/CNNdata/dataset/emnist-letters-test-images-idx3-ubyte.gz']
+        './src/doodbot/CNNdata/dataset/emnist-letters-train-labels-idx1-ubyte.gz',
+        './src/doodbot/CNNdata/dataset/emnist-letters-train-images-idx3-ubyte.gz',
+        './src/doodbot/CNNdata/dataset/emnist-letters-test-labels-idx1-ubyte.gz',
+        './src/doodbot/CNNdata/dataset/emnist-letters-test-images-idx3-ubyte.gz']
 }
 
 

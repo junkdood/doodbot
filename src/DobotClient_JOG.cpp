@@ -1,8 +1,8 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include "dobot/SetCmdTimeout.h"
-#include "dobot/SetJOGCmd.h"
-#include "dobot/SetHOMECmd.h"
+#include "doodbot/SetCmdTimeout.h"
+#include "doodbot/SetJOGCmd.h"
+#include "doodbot/SetHOMECmd.h"
 #include <cstdlib>
 
 #include <termios.h>
@@ -68,8 +68,8 @@ void keyboardLoop(ros::NodeHandle &n)
         }
 	    // SetJOGCmdService
         ros::ServiceClient client;
-        client = n.serviceClient<dobot::SetJOGCmd>("/DobotServer/SetJOGCmd");
-        dobot::SetJOGCmd srv;
+        client = n.serviceClient<doodbot::SetJOGCmd>("/DobotServer/SetJOGCmd");
+        doodbot::SetJOGCmd srv;
         srv.request.isJoint = false;
         switch(c) {
             case KEYCODE_W:
@@ -124,9 +124,9 @@ int main(int argc, char **argv)
 
     // SetCmdTimeout
     ros::ServiceClient client;
-    client = n.serviceClient<dobot::SetCmdTimeout>("/DobotServer/SetCmdTimeout");
+    client = n.serviceClient<doodbot::SetCmdTimeout>("/DobotServer/SetCmdTimeout");
     client.waitForExistence();
-    dobot::SetCmdTimeout srv;
+    doodbot::SetCmdTimeout srv;
     srv.request.timeout = 3000;
     if (client.call(srv) == false) {
         ROS_ERROR("Failed to call SetCmdTimeout. Maybe DobotServer isn't started yet!");

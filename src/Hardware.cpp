@@ -1,4 +1,4 @@
-#include "dobot/Hardware.h"
+#include "doodbot/Hardware.h"
 
 void Interface::xyz_to_jointAngle(float x, float y, float z, float r, float jointAngle[4]){
     double R_2 = x*x + y*y;

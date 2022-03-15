@@ -1,4 +1,4 @@
-#include "dobot/player.h"
+#include "doodbot/player.h"
 
 ChessPlayer::ChessPlayer(){
     _playerstate = ChessPlayer::NOT_INITIALIZED;

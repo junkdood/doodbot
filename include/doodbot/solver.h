@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dobot/common.h"
+#include "doodbot/common.h"
 
 using casadi::DM;
 using casadi::MX;
