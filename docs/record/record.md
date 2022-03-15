@@ -238,3 +238,9 @@ vis.cpp 被废弃，用imager.py处理图像
 
 重构imager的代码
 使用std_msgs.msg 的 Int32MultiArray 传递井字棋状态
+
+把项目名从dobot改成doodbot
+
+创建了doodbot类进行模块整合，管理回调函数啥的。plan.cpp弃用，改成test.cpp。
+
+发现一个大问题，imager好慢...
