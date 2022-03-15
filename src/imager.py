@@ -40,14 +40,16 @@ class Predict(object):
 
 class Imager():
     def __init__(self):
+
+        self._bridge = CvBridge()
+        self._predicter = Predict()
+
+
         self._sub = rospy.Subscriber('kinect2/hd/image_color', Image, self.callback, queue_size=1)
         self._pub0 = rospy.Publisher('newimage', Image, queue_size=1)
         self._pub1 = rospy.Publisher('OXstate', Int32MultiArray, queue_size=1)
         self.rate = rospy.Rate(10)
 
-        self._bridge = CvBridge()
-
-        self._predicter = Predict()
 
     def linepainter(self, lines, image):
         # 把线在图上标出来

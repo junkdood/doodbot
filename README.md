@@ -1,10 +1,12 @@
-# dobot_magician
+# doodbot
+junkdood的毕业设计机械臂
+
 
 ### 编译
 假设已经有ros环境和casadi环境（casadi下面有安装步骤）
 ```sh
-mkdir -p ~/dobot_ws/src && cd ~/dobot_ws/src
-git clone https://github.com/junkdood/dobot_package.git
+mkdir -p ~/catkin_ws/src && cd ~/catkin_ws/src
+git clone https://github.com/junkdood/doodbot.git
 cd ..
 catkin_make
 ```
@@ -12,34 +14,34 @@ catkin_make
 ### 运行
 运行先需要source一下环境
 ```sh
-cd ~/dobot_ws
+cd ~/catkin_ws
 source devel/setup.bash
 ```
 
 归零
 ```sh
-roslaunch dobot sethome.launch
+roslaunch doodbot sethome.launch
 ```
 
 直接键盘控制
 ```sh
-roslaunch dobot jog.launch
+roslaunch doodbot jog.launch
 ```
 
 跑模型预测控制
 ```sh
-roslaunch dobot hardware_test.launch
+roslaunch doodbot hardware_test.launch
 ```
 
 跑相机图像处理程序
 ```sh
-rosrun dobot imager.py
+rosrun doodbot imager.py
 ```
 
 训练OX识别
 跑相机图像处理程序(数据集已经被我删了)
 ```sh
-rosrun dobot pretrain.py
+rosrun doodbot pretrain.py
 ```
 
 运行rosbag模拟相机驱动输出
@@ -82,7 +84,7 @@ rviz
    ```
    or just run as
    ```sh
-   rosrun dobot DobotServer /dev/tty
+   rosrun doodbot DobotServer /dev/tty
    ```
 
 2. 因为机械臂关机之后关节不会锁定，重新开机后会有极大的误差，一定要跑归零
