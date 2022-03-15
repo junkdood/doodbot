@@ -41,7 +41,8 @@ class Predict(object):
 class Imager():
     def __init__(self):
         self._sub = rospy.Subscriber('kinect2/hd/image_color', Image, self.callback, queue_size=1)
-        self._pub = rospy.Publisher('newimage', Image, queue_size=1)
+        self._pub0 = rospy.Publisher('newimage', Image, queue_size=1)
+        self._pub1 = rospy.Publisher('OXstate', Int32MultiArray, queue_size=1)
         self.rate = rospy.Rate(10)
 
         self._bridge = CvBridge()
@@ -52,6 +53,13 @@ class Imager():
             [' ', ' ', ' '],
             [' ', ' ', ' '],
             [' ', ' ', ' ']
+        ]
+
+        self._OXstate = Int32MultiArray()
+        self._OXstate.data = [
+            0, 0, 0,
+            0, 0, 0,
+            0, 0, 0
         ]
 
     def callback(self, image_in):
@@ -195,10 +203,13 @@ class Imager():
                     OXsymNum = self._predicter.predict_tf(image_cv[200 + i*200 + 20: 200 + i*200 + 180, 200 + j*200 + 20: 200 + j*200 + 180])
                     if OXsymNum == 15 or OXsymNum == 4:
                         self._OXresult[i][j] = 'O'
+                        self._OXstate.data[i*3+j] = 2
                     elif OXsymNum == 25 or OXsymNum == 24:
                         self._OXresult[i][j] = 'X'
+                        self._OXstate.data[i*3+j] = 3
                     else:
                         self._OXresult[i][j] = ' '
+                        self._OXstate.data[i*3+j] = 1
                 
                 
         # tmp = cv2.cvtColor(image_cv[420:580, 620:780], cv2.COLOR_RGB2GRAY)
@@ -207,6 +218,7 @@ class Imager():
         # tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
         result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
         self._pub.publish(result)
+        self._pub.publish(self._OXstate)
         print(self._OXresult[0])
         print(self._OXresult[1])
         print(self._OXresult[2])
