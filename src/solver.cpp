@@ -69,9 +69,9 @@ void DirectCollocationSolver::setOptColloc(){
     costWeights w = settings._costWeights;
     for(casadi_int k = 0; k < N; ++k){
         if(k % 2 == 0 && k + 2 <= N){
-            f_curr = MX::vertcat(systemDynamics({X(Slice(), k), V(Slice(), k), dT})) + AEKFqParameters;
-            f_next = MX::vertcat(systemDynamics({X(Slice(), k + 2), V(Slice(), k + 2), dT})) + AEKFqParameters;
-            f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), dT})) + AEKFqParameters;
+            f_curr = MX::vertcat(systemDynamics({X(Slice(), k), V(Slice(), k), dT})) + AEKFqParameters/2;
+            f_next = MX::vertcat(systemDynamics({X(Slice(), k + 2), V(Slice(), k + 2), dT})) + AEKFqParameters/2;
+            f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), dT})) + AEKFqParameters/2;
             opti.subject_to(X(Slice(), k + 2) == X(Slice(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
             costFunction += w.path * mtimes((X(Slice(),k+2)-X(Slice(),k)).T(), (X(Slice(),k+2)-X(Slice(),k)));
