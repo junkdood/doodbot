@@ -22,7 +22,7 @@ class Predict(object):
 
     def predict_tf(self, image):
         image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
-        _, image = cv2.threshold(image,238,255,cv2.THRESH_BINARY)
+        _, image = cv2.threshold(image,236,255,cv2.THRESH_BINARY)
         image = cv2.copyMakeBorder(image,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
         image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
         image = np.reshape(image, (28, 28, 1)) / 255
@@ -63,13 +63,14 @@ class Imager():
         ]
 
     def preprocess(self, image):
-        #裁减
+        # 裁减
         rows, cols, _ = image.shape
         rospy.loginfo("r:{}, c:{}".format(rows,cols))
         return image[int(rows*0.65):int(rows*0.9), int(cols*0.27):int(cols*0.45)]
 
 
     def linefilter(self, lines):
+        # 过滤重叠的线
         target_lines = []
         for line in lines:
             r = line[0][0]
@@ -87,6 +88,7 @@ class Imager():
         return target_lines
 
     def linepainter(self, lines, image):
+        # 把线在图上标出来
         for line in lines:
             r = line[0]
             theta = line[1]
@@ -102,6 +104,7 @@ class Imager():
 
 
     def pointfinder(self, target_lines):
+        # 找到井字的四个交点
         target_points = []
         for i, target_line_0 in enumerate(target_lines):
             for j, target_line_1 in enumerate(target_lines):
@@ -125,6 +128,7 @@ class Imager():
         return target_points
 
     def pointsorter(self, target_points):
+        # 按照 下左上右 的顺序把交点排序
         sorted_points = []
         ##################sh*t code to sort the point###############################################
         for i, target_point_0 in enumerate(target_points):
@@ -137,6 +141,7 @@ class Imager():
                     break
             if flag:
                 sorted_points.append([target_point_0[0], target_point_0[1]])
+                break
         for i, target_point_0 in enumerate(target_points):
             flag = True
             for j, target_point_1 in enumerate(target_points):
@@ -147,6 +152,7 @@ class Imager():
                     break
             if flag:
                 sorted_points.append([target_point_0[0], target_point_0[1]])
+                break
         for i, target_point_0 in enumerate(target_points):
             flag = True
             for j, target_point_1 in enumerate(target_points):
@@ -157,6 +163,7 @@ class Imager():
                     break
             if flag:
                 sorted_points.append([target_point_0[0], target_point_0[1]])
+                break
         for i, target_point_0 in enumerate(target_points):
             flag = True
             for j, target_point_1 in enumerate(target_points):
@@ -167,6 +174,7 @@ class Imager():
                     break
             if flag:
                 sorted_points.append([target_point_0[0], target_point_0[1]])
+                break
         ##################sh*t code to sort the point###############################################
         return sorted_points
 
@@ -200,6 +208,7 @@ class Imager():
         return []
 
     def projection(self, crosspoints, image):
+        # 把井字棋投影变换到上帝视角
         p1 = np.float32([
             [crosspoints[0][0],crosspoints[0][1]], 
             [crosspoints[1][0],crosspoints[1][1]],
@@ -247,9 +256,11 @@ class Imager():
                 for j in range(3):
                     OXsymNum = self._predicter.predict_tf(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190])
                     if OXsymNum == 15 or OXsymNum == 4:
+                        # O / D
                         self._OXresult[i][j] = 'O'
                         self._OXstate.data[i*3+j] = 2
-                    elif OXsymNum == 25 or OXsymNum == 24:
+                    elif OXsymNum == 24 or OXsymNum == 25:
+                        # X / Y
                         self._OXresult[i][j] = 'X'
                         self._OXstate.data[i*3+j] = 3
                     else:
@@ -257,16 +268,18 @@ class Imager():
                         self._OXstate.data[i*3+j] = 1
                         
                 
-        i = 0
-        j = 2
-        tmp = cv2.cvtColor(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190], cv2.COLOR_RGB2GRAY)
-        _, tmp = cv2.threshold(tmp,238,255,cv2.THRESH_BINARY)
-        tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
-        tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
-        result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
+        # i = 2
+        # j = 2
+        # tmp = cv2.cvtColor(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190], cv2.COLOR_RGB2GRAY)
+        # _, tmp = cv2.threshold(tmp,236,255,cv2.THRESH_BINARY)
+        # tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
+        # tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
+        # result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
 
 
-        # result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
+        result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
+
+
         self._pub0.publish(result)
         self._pub1.publish(self._OXstate)
         print(self._OXresult[0])
