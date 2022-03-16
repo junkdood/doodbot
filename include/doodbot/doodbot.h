@@ -19,7 +19,10 @@ class doodbot{
     void draw_board();
 
 
-    void moveto_offline(DM destination);
+    void moveSto_offline(DM destination);
+    void draw_X_test();
+    void draw_O_test();
+    void moveC(double circleX, double circleY);
     void log_pose();
     void log_board();
     bool moving();

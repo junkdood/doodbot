@@ -5,7 +5,7 @@ int main(int argc, char **argv){
     ros::Time::init();
     doodbot jundood(argc, argv);
 
-    jundood.draw_board();
+    jundood.draw_X_test();
 
     return 0;
 }

@@ -23,6 +23,16 @@ typedef struct {
     casadi::DM state = casadi::DM::zeros(4,1);
 }State;
 
+typedef struct {
+    double straightW;
+
+
+    double circleW;
+    double circleX;
+    double circleY;
+    double circleR;
+}PathCost;
+
 typedef struct{
     double l0;
     double l1;

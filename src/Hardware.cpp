@@ -249,6 +249,10 @@ void Simulator_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, 
 
 void Simulator_Interface::Send_CP_Cmd(float x, float y, float z, float r){
     xyz_to_jointAngle(x, y, z, r, _sim_jointAngle);
+
+    Pose pose;
+    jointAngle_to_xyz(_sim_jointAngle, pose.x, pose.y, pose.z, pose.r);
+    std::cout<<pose.x<<" "<<pose.y<<" "<<pose.z<<" "<<pose.r<<std::endl;
 }
 
 bool Simulator_Interface::isValid(){

@@ -54,47 +54,121 @@ doodbot::~doodbot(){
 void doodbot::draw_board(){
     // [190,15,-60,0][190,-15,-60,0][160,15,-60,0][160,-15,-60,0]
 
-    moveto_offline({190,45,-40,0});
-    moveto_offline({190,45,-60,0});
-    moveto_offline({190,-45,-60,0});
-    moveto_offline({190,-45,-40,0});
+    moveSto_offline({190,45,-40,0});
+    moveSto_offline({190,45,-60,0});
+    moveSto_offline({190,-45,-60,0});
+    moveSto_offline({190,-45,-40,0});
     log_pose();
-    ros::spinOnce();
-    log_board();
 
-    moveto_offline({160,-45,-40,0});
-    moveto_offline({160,-45,-60,0});
-    moveto_offline({160,45,-60,0});
-    moveto_offline({160,45,-40,0});
+    moveSto_offline({160,-45,-40,0});
+    moveSto_offline({160,-45,-60,0});
+    moveSto_offline({160,45,-60,0});
+    moveSto_offline({160,45,-40,0});
     log_pose();
-    ros::spinOnce();
-    log_board();
 
-    moveto_offline({130,15,-40,0});
-    moveto_offline({130,15,-60,0});
-    moveto_offline({220,15,-60,0});
-    moveto_offline({220,15,-40,0});
+    moveSto_offline({130,15,-40,0});
+    moveSto_offline({130,15,-60,0});
+    moveSto_offline({220,15,-60,0});
+    moveSto_offline({220,15,-40,0});
     log_pose();
-    ros::spinOnce();
-    log_board();
 
-    moveto_offline({220,-15,-40,0});
-    moveto_offline({220,-15,-60,0});
-    moveto_offline({130,-15,-60,0});
-    moveto_offline({130,-15,-40,0});
+    moveSto_offline({220,-15,-40,0});
+    moveSto_offline({220,-15,-60,0});
+    moveSto_offline({130,-15,-60,0});
+    moveSto_offline({130,-15,-40,0});
     log_pose();
-    ros::spinOnce();
-    log_board();
 }
 
-void doodbot::moveto_offline(DM destination){
+void doodbot::draw_X_test(){
+    moveSto_offline({175, 0, -40, 0});
+    moveSto_offline({185, 10, -40, 0});
+    moveSto_offline({185, 10, -60, 0});
+    moveSto_offline({165, -10, -60, 0});
+    moveSto_offline({165, -10, -40, 0});
+    moveSto_offline({165, 10, -40, 0});
+    moveSto_offline({165, 10, -60, 0});
+    moveSto_offline({185, -10, -60, 0});
+    moveSto_offline({185, -10, -40, 0});
+}
+
+void doodbot::draw_O_test(){
+    moveSto_offline({175, 0, -40, 0});
+    moveSto_offline({175, 10, -40, 0});
+    moveSto_offline({175, 10, -60, 0});
+    moveC(175, 0);
+    moveSto_offline({175, 10, -40, 0});
+}
+
+void doodbot::moveSto_offline(DM destination){
     Pose init_pose = dobot->Get_Pose();
+    PathCost path = {1, 0, 0, 0, 0};
+
     State initialState, finalState, AEKFq;
     initialState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
     finalState.state = destination;
     AEKFq.state = DM::zeros(4);
+
     DM sol_state, sol_control;
-    bool ok = solver->solveColloc(initialState, finalState, AEKFq);
+    bool ok = solver->solveColloc(initialState, finalState, AEKFq, path);
+    if(ok) solver->getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  sol_state.size2(); ++i){
+        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
+    }
+    // ros::Duration(2).sleep();
+    while(moving());
+}
+
+void doodbot::moveC(double circleX, double circleY){
+    Pose init_pose = dobot->Get_Pose();
+    double circleR = sqrt(pow(init_pose.x - circleX, 2) + pow(init_pose.y - circleY, 2));
+    PathCost path = {0, 1, circleX, circleY, circleR};
+
+    State initialState, finalState, AEKFq;
+    initialState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
+    finalState.state = {circleX + (circleY - init_pose.y), circleY - (circleX - init_pose.x), init_pose.z, init_pose.r};
+    AEKFq.state = DM::zeros(4);
+
+    DM sol_state, sol_control;
+    bool ok = solver->solveColloc(initialState, finalState, AEKFq, path);
+    if(ok) solver->getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  sol_state.size2(); ++i){
+        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
+    }
+    // ros::Duration(2).sleep();
+    while(moving());
+
+
+    initialState.state = {circleX + (circleY - init_pose.y), circleY - (circleX - init_pose.x), init_pose.z, init_pose.r};
+    finalState.state = {circleX + (circleX - init_pose.x), circleY + (circleY - init_pose.y), init_pose.z, init_pose.r};
+    AEKFq.state = DM::zeros(4);
+
+    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
+    if(ok) solver->getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  sol_state.size2(); ++i){
+        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
+    }
+    // ros::Duration(2).sleep();
+    while(moving());
+
+
+    initialState.state = {circleX + (circleX - init_pose.x), circleY + (circleY - init_pose.y), init_pose.z, init_pose.r};
+    finalState.state = {circleX - (circleY - init_pose.y), circleY + (circleX - init_pose.x), init_pose.z, init_pose.r};
+    AEKFq.state = DM::zeros(4);
+
+    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
+    if(ok) solver->getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  sol_state.size2(); ++i){
+        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
+    }
+    // ros::Duration(2).sleep();
+    while(moving());
+
+
+    initialState.state = {circleX - (circleY - init_pose.y), circleY + (circleX - init_pose.x), init_pose.z, init_pose.r};
+    finalState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
+    AEKFq.state = DM::zeros(4);
+
+    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
     if(ok) solver->getSolutionColloc(sol_state, sol_control);
     for(int i = 0; i <  sol_state.size2(); ++i){
         dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());

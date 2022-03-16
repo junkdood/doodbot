@@ -21,6 +21,13 @@ DirectCollocationSolver::DirectCollocationSolver(const arm_model& _model, const 
     finalStateParameters = opti.parameter(4);
     AEKFqParameters = opti.parameter(4);
 
+    straightWParameters = opti.parameter();
+    circleWParameters = opti.parameter();
+    circleXParameters = opti.parameter();
+    circleYParameters = opti.parameter();
+    circleRParameters = opti.parameter();
+    
+
     opti.set_value(minJ0, _constraint.j0_min);
     opti.set_value(maxJ0, _constraint.j0_max);
     opti.set_value(minJ1, _constraint.j1_min);
@@ -74,7 +81,14 @@ void DirectCollocationSolver::setOptColloc(){
             f_mid = MX::vertcat(systemDynamics({X(Slice(), k + 1), V(Slice(), k + 1), dT})) + AEKFqParameters;
             opti.subject_to(X(Slice(), k + 2) == X(Slice(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
-            costFunction += w.path * mtimes((X(Slice(),k+2)-X(Slice(),k)).T(), (X(Slice(),k+2)-X(Slice(),k)));
+            //尽量走直线
+            costFunction += w.path * straightWParameters * mtimes((X(Slice(),k+2)-X(Slice(),k)).T(), (X(Slice(),k+2)-X(Slice(),k)));
+
+            //走圆的时候另外两个自由度尽量不变
+            costFunction += w.path * circleWParameters * mtimes((X(Slice(2,4),k+2)-X(Slice(2,4),k)).T(), (X(Slice(2,4),k+2)-X(Slice(2,4),k)));
+            costFunction += w.path * circleWParameters * pow(sqrt(pow(X(0,k) - circleXParameters, 2) + pow(X(1,k) - circleYParameters, 2)) - circleRParameters, 2);
+
+            //控制量尽可能平均
             costFunction += w.control * dT / 6 * ( (mtimes(V(Slice(),k).T(),V(Slice(),k))/4) + 4 * (mtimes(V(Slice(),k+1).T(),V(Slice(),k+1))/4) + (mtimes(V(Slice(),k+2).T(),V(Slice(),k+2))/4));
         }
         else if(k % 2 != 0){
@@ -130,18 +144,24 @@ bool DirectCollocationSolver::setupProblemColloc(const Settings& _settings){
     return true;
 }
 
-void DirectCollocationSolver::setParametersValue(const State& initialState, const State& finalState, const State& AEKFq){
+void DirectCollocationSolver::setParametersValue(const State& initialState, const State& finalState, const State& AEKFq, const PathCost& path){
     opti.set_value(initialStateParameters, initialState.state);
     opti.set_value(finalStateParameters, finalState.state);
     opti.set_value(AEKFqParameters, AEKFq.state);
+
+    opti.set_value(straightWParameters, path.straightW);
+    opti.set_value(circleWParameters, path.circleW);
+    opti.set_value(circleXParameters, path.circleX);
+    opti.set_value(circleYParameters, path.circleY);
+    opti.set_value(circleRParameters, path.circleR);
 }
 
-bool DirectCollocationSolver::solveColloc(const State& initialState, const State& finalState, const State& AEKFq){
+bool DirectCollocationSolver::solveColloc(const State& initialState, const State& finalState, const State& AEKFq, const PathCost& path){
     if(solverState == SolverState::NOT_INITIALIZED){
         throw std::runtime_error("problem not initialized");
         return false;
     }
-    setParametersValue(initialState, finalState, AEKFq);
+    setParametersValue(initialState, finalState, AEKFq, path);
     casadi_int npoints = 2 * static_cast<casadi_int> (settings.phaseLength);
     DM initPos = DM::zeros(4,1);
     DM finalPos = DM::zeros(4,1);

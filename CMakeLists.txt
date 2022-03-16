@@ -244,9 +244,9 @@ add_executable(vis src/vis.cpp)
 target_link_libraries(vis ${catkin_LIBRARIES})
 add_dependencies(vis doodbot_gencpp)
 
-add_executable(test_node src/Hardware.cpp src/test.cpp src/solver.cpp src/player.cpp)
-target_link_libraries(test_node ${catkin_LIBRARIES} DobotDll casadi)
-add_dependencies(test_node doodbot_gencpp)
+# add_executable(test_node src/Hardware.cpp src/test.cpp src/solver.cpp src/player.cpp)
+# target_link_libraries(test_node ${catkin_LIBRARIES} DobotDll casadi)
+# add_dependencies(test_node doodbot_gencpp)
 
 add_executable(${PROJECT_NAME}_node src/Hardware.cpp src/solver.cpp src/player.cpp src/doodbot.cpp src/main.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} DobotDll casadi)

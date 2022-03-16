@@ -244,7 +244,11 @@ class Imager():
 
             for i in range(3):
                 for j in range(3):
+                    begin_t = rospy.Time.now()
                     OXsymNum = self._predicter.predict_tf(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190])
+                    end_t = rospy.Time.now()
+                    rospy.loginfo("Duration: {}".format((end_t - begin_t).to_sec()))
+
                     if OXsymNum == 15 or OXsymNum == 4:
                         # O / D
                         OXresult[i][j] = 'O'

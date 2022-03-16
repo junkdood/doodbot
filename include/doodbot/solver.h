@@ -13,13 +13,13 @@ public:
     DirectCollocationSolver(const arm_model& _model, const constraint_value& _constraint);
     ~DirectCollocationSolver(){ };
     bool setupProblemColloc(const Settings& _settings);
-    bool solveColloc(const State& initialState, const State& finalState, const State& AEKFq);
+    bool solveColloc(const State& initialState, const State& finalState, const State& AEKFq, const PathCost& path);
     void getSolutionColloc(DM& state, DM& control);
 private:
     Function systemDynamics;
     Function getSystemDynamics();
     void setOptColloc();
-    void setParametersValue(const State& initialState, const State& finalState, const State& AEKFq);
+    void setParametersValue(const State& initialState, const State& finalState, const State& AEKFq, const PathCost& path);
 
 
     arm_model model;
@@ -30,7 +30,10 @@ private:
 
     Opti opti;
     std::unique_ptr<casadi::OptiSol> solution;
+
     MX initialStateParameters, finalStateParameters, AEKFqParameters;
+    MX straightWParameters, circleWParameters, circleXParameters, circleYParameters, circleRParameters;
+
     MX X, A, V, T;
     MX minJ0, maxJ0, minJ1, maxJ1, minJ2, maxJ2, minJ1subJ2, maxJ1subJ2, minV, maxV;
 };
