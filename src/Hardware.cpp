@@ -55,7 +55,7 @@ Hardware_Interface::Hardware_Interface(char* port, unsigned int timeout){
         DisconnectDobot();
         throw "Communicate Failed";
     }
-    std::cout<<params.planAcc<<"  "<<params.juncitionVel<<"  "<<params.acc<<"  "<<int(params.realTimeTrack)<<std::endl;
+    // std::cout<<params.planAcc<<"  "<<params.juncitionVel<<"  "<<params.acc<<"  "<<int(params.realTimeTrack)<<std::endl;
 
 
     uint64_t queuedCmdIndex;
