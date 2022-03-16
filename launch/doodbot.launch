@@ -1,5 +1,5 @@
 <launch>
-  <arg name="mode" default="real"/>
+  <arg name="mode" default="sim"/>
   <arg name="port" default="ttyUSB0"/>  
   <node name="wxyz" pkg="doodbot" type="doodbot_node" args="$(arg mode) $(arg port)" output="screen"/>
 </launch>

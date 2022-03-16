@@ -39,4 +39,5 @@ class doodbot{
     ros::Subscriber msg_sub;
 
     int board[3][3];
+    
 };
