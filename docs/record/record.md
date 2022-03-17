@@ -252,3 +252,8 @@ imager的CNN真的很慢，识别一个块0.1秒。9个块就1秒了
 
 简单写了一下画O和X的路径规划，基本能用。给solver加了一些奇奇怪怪的损失函数
 
+#### 2022-3-17
+
+完整下棋逻辑闭环基本完成
+
+<img src="assets/framwork.jpg" alt="framwork" style="zoom:150%;" />
