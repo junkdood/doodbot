@@ -65,6 +65,7 @@ void doodbot::letsplay(){
     bool flag = true;
     while(1){
         int t = scanf("%c",&first);
+        getchar();
         if(first=='x'){
             flag = true;
             break;
@@ -78,7 +79,6 @@ void doodbot::letsplay(){
     while(!gameOver()){
         if(flag){
             printf("press ENTER button to go on after you play your turn\n");
-            getchar();
             getchar();
         }
         else{
@@ -98,13 +98,13 @@ void doodbot::letsplay(){
         flag = !flag;
     }
     if(gameOver() == O){
-        printf("doodbot wins!");
+        printf("doodbot wins!\n");
     }
     else if(gameOver() == X){
-        printf("you wins!");
+        printf("you wins!\n");
     }
     else{
-        printf("no winer!");
+        printf("no winer!\n");
     }
 }
 

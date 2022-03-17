@@ -56,7 +56,7 @@ class doodbot{
 
     //定义笔碰到和不碰到的高度
     const double penUp = -40;
-    const double penDown = -60;
+    const double penDown = -55;
 
     //常用变量(用之前一定要自己初始化！)
     State initialState, finalState, AEKFq;
