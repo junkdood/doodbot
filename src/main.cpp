@@ -3,9 +3,16 @@
 int main(int argc, char **argv){
     ros::init(argc, argv, "wxyz");
     ros::Time::init();
-    doodbot jundood(argc, argv);
+    doodbot junkdood(argc, argv);
 
-    jundood.draw_X_test();
+    // junkdood.draw_board();
+    // junkdood.draw_X(0, 0);
+    // junkdood.draw_O(0, 2);
+    // junkdood.draw_X(1, 1);
+    // junkdood.draw_X(2, 0);
+    // junkdood.draw_O(2, 2);
+
+    junkdood.letsplay();
 
     return 0;
 }

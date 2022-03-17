@@ -12,16 +12,17 @@ class ChessPlayer{
     ChessPlayer();
     ~ChessPlayer(){};
 
-    void SetState(int msg);
+    void SetState(int board[3][3]);
 
     void PlayChess();
 
-    int Getlocation();
+    int GetI();
+    int GetJ();
 
     private:
     enum PlayerState{NOT_INITIALIZED=0, STATE_SET, STATE_SOLVED};
     PlayerState _playerstate;
-    double _board;
-    int _msg;
-    int _decision;
+    int _board[3][3];
+    int _decisionI;
+    int _decisionJ;
 };

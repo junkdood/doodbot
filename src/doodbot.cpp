@@ -36,6 +36,8 @@ doodbot::doodbot(int argc, char **argv){
 
     filter = new KalmanFilter(model, settings.time / (double)settings.phaseLength);    
 
+    player = new ChessPlayer();
+
     for(int i = 0; i < 3; i++){
         for(int j = 0;j < 3;j++){
             board[i][j] = 0;
@@ -49,136 +51,122 @@ doodbot::~doodbot(){
     delete dobot;
     delete solver;
     delete filter;
+    delete player;
 }
+
+void doodbot::letsplay(){
+    draw_board();
+    while(board[0][0]==NOBOARD){
+        ROS_INFO("No board recognized!");
+        ros::spinOnce();
+    }
+    printf("who first, you or doodbot?\n'x' for you\n'o' for doobot\n");
+    char first;
+    bool flag = true;
+    while(1){
+        int t = scanf("%c",&first);
+        if(first=='x'){
+            flag = true;
+            break;
+        }
+        else if(first=='o'){
+            flag = false;
+            break;
+        }
+        printf("\nYou press a wrong letter\nplease enter again:");
+    }
+    while(!gameOver()){
+        if(flag){
+            printf("press ENTER button to go on after you play your turn\n");
+            getchar();
+            getchar();
+        }
+        else{
+            ros::spinOnce();
+            ros::spinOnce();
+            ros::spinOnce();
+            ros::spinOnce();
+            ros::spinOnce();
+            log_board();
+            
+            player->SetState(board);
+            player->PlayChess();
+            draw_O(player->GetI(), player->GetJ());
+        }
+
+
+        flag = !flag;
+    }
+    if(gameOver() == O){
+        printf("doodbot wins!");
+    }
+    else if(gameOver() == X){
+        printf("you wins!");
+    }
+    else{
+        printf("no winer!");
+    }
+}
+
+
 
 void doodbot::draw_board(){
-    // [190,15,-60,0][190,-15,-60,0][160,15,-60,0][160,-15,-60,0]
+    moveSto_offline({boardX, boardY + boardStep, penUp, 0});
+    moveSto_offline({boardX, boardY + boardStep, penDown, 0});
+    moveSto_offline({boardX, boardY - 2*boardStep, penDown, 0});
+    moveSto_offline({boardX, boardY - 2*boardStep, penUp, 0});
 
-    moveSto_offline({190,45,-40,0});
-    moveSto_offline({190,45,-60,0});
-    moveSto_offline({190,-45,-60,0});
-    moveSto_offline({190,-45,-40,0});
-    log_pose();
+    moveSto_offline({boardX - boardStep, boardY - 2*boardStep, penUp, 0});
+    moveSto_offline({boardX - boardStep, boardY - 2*boardStep, penDown, 0});
+    moveSto_offline({boardX - boardStep, boardY + boardStep, penDown, 0});
+    moveSto_offline({boardX - boardStep, boardY + boardStep, penUp, 0});
 
-    moveSto_offline({160,-45,-40,0});
-    moveSto_offline({160,-45,-60,0});
-    moveSto_offline({160,45,-60,0});
-    moveSto_offline({160,45,-40,0});
-    log_pose();
+    moveSto_offline({boardX - 2*boardStep, boardY, penUp, 0});
+    moveSto_offline({boardX - 2*boardStep, boardY, penDown, 0});
+    moveSto_offline({boardX + boardStep, boardY, penDown, 0});
+    moveSto_offline({boardX + boardStep, boardY, penUp,0});
 
-    moveSto_offline({130,15,-40,0});
-    moveSto_offline({130,15,-60,0});
-    moveSto_offline({220,15,-60,0});
-    moveSto_offline({220,15,-40,0});
-    log_pose();
+    moveSto_offline({boardX + boardStep, boardY - boardStep, penUp, 0});
+    moveSto_offline({boardX + boardStep, boardY - boardStep, penDown, 0});
+    moveSto_offline({boardX - 2*boardStep, boardY - boardStep, penDown, 0});
+    moveSto_offline({boardX - 2*boardStep, boardY - boardStep, penUp, 0});
 
-    moveSto_offline({220,-15,-40,0});
-    moveSto_offline({220,-15,-60,0});
-    moveSto_offline({130,-15,-60,0});
-    moveSto_offline({130,-15,-40,0});
-    log_pose();
+    defaultPose();
 }
 
-void doodbot::draw_X_test(){
-    moveSto_offline({175, 0, -40, 0});
-    moveSto_offline({185, 10, -40, 0});
-    moveSto_offline({185, 10, -60, 0});
-    moveSto_offline({165, -10, -60, 0});
-    moveSto_offline({165, -10, -40, 0});
-    moveSto_offline({165, 10, -40, 0});
-    moveSto_offline({165, 10, -60, 0});
-    moveSto_offline({185, -10, -60, 0});
-    moveSto_offline({185, -10, -40, 0});
+void doodbot::draw_X(double i, double j){
+    double x = chessX - i*boardStep;
+    double y = chessY - j*boardStep;
+    double size = 10;
+    moveSto_offline({x, y, penUp, 0});
+    moveSto_offline({x+size, y+size, penUp, 0});
+    moveSto_offline({x+size, y+size, penDown, 0});
+    moveSto_offline({x-size, y-size, penDown, 0});
+    moveSto_offline({x-size, y-size, penUp, 0});
+    moveSto_offline({x-size, y+size, penUp, 0});
+    moveSto_offline({x-size, y+size, penDown, 0});
+    moveSto_offline({x+size, y-size, penDown, 0});
+    moveSto_offline({x+size, y-size, penUp, 0});
+
+    defaultPose();
 }
 
-void doodbot::draw_O_test(){
-    moveSto_offline({175, 0, -40, 0});
-    moveSto_offline({175, 10, -40, 0});
-    moveSto_offline({175, 10, -60, 0});
-    moveC(175, 0);
-    moveSto_offline({175, 10, -40, 0});
+void doodbot::draw_O(double i, double j){
+    double x = chessX - i*boardStep;
+    double y = chessY - j*boardStep;
+    double size = 10;
+    moveSto_offline({x, y, penUp, 0});
+    moveSto_offline({x, y+size, penUp, 0});
+    moveSto_offline({x, y+size, penDown, 0});
+    moveC_offline(x, y);
+    moveSto_offline({x, y+size, penUp, 0});
+
+    defaultPose();
 }
 
-void doodbot::moveSto_offline(DM destination){
-    Pose init_pose = dobot->Get_Pose();
-    PathCost path = {1, 0, 0, 0, 0};
-
-    State initialState, finalState, AEKFq;
-    initialState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
-    finalState.state = destination;
-    AEKFq.state = DM::zeros(4);
-
-    DM sol_state, sol_control;
-    bool ok = solver->solveColloc(initialState, finalState, AEKFq, path);
-    if(ok) solver->getSolutionColloc(sol_state, sol_control);
-    for(int i = 0; i <  sol_state.size2(); ++i){
-        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
-    }
-    // ros::Duration(2).sleep();
-    while(moving());
-}
-
-void doodbot::moveC(double circleX, double circleY){
-    Pose init_pose = dobot->Get_Pose();
-    double circleR = sqrt(pow(init_pose.x - circleX, 2) + pow(init_pose.y - circleY, 2));
-    PathCost path = {0, 1, circleX, circleY, circleR};
-
-    State initialState, finalState, AEKFq;
-    initialState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
-    finalState.state = {circleX + (circleY - init_pose.y), circleY - (circleX - init_pose.x), init_pose.z, init_pose.r};
-    AEKFq.state = DM::zeros(4);
-
-    DM sol_state, sol_control;
-    bool ok = solver->solveColloc(initialState, finalState, AEKFq, path);
-    if(ok) solver->getSolutionColloc(sol_state, sol_control);
-    for(int i = 0; i <  sol_state.size2(); ++i){
-        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
-    }
-    // ros::Duration(2).sleep();
-    while(moving());
-
-
-    initialState.state = {circleX + (circleY - init_pose.y), circleY - (circleX - init_pose.x), init_pose.z, init_pose.r};
-    finalState.state = {circleX + (circleX - init_pose.x), circleY + (circleY - init_pose.y), init_pose.z, init_pose.r};
-    AEKFq.state = DM::zeros(4);
-
-    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
-    if(ok) solver->getSolutionColloc(sol_state, sol_control);
-    for(int i = 0; i <  sol_state.size2(); ++i){
-        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
-    }
-    // ros::Duration(2).sleep();
-    while(moving());
-
-
-    initialState.state = {circleX + (circleX - init_pose.x), circleY + (circleY - init_pose.y), init_pose.z, init_pose.r};
-    finalState.state = {circleX - (circleY - init_pose.y), circleY + (circleX - init_pose.x), init_pose.z, init_pose.r};
-    AEKFq.state = DM::zeros(4);
-
-    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
-    if(ok) solver->getSolutionColloc(sol_state, sol_control);
-    for(int i = 0; i <  sol_state.size2(); ++i){
-        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
-    }
-    // ros::Duration(2).sleep();
-    while(moving());
-
-
-    initialState.state = {circleX - (circleY - init_pose.y), circleY + (circleX - init_pose.x), init_pose.z, init_pose.r};
-    finalState.state = {init_pose.x, init_pose.y, init_pose.z, init_pose.r};
-    AEKFq.state = DM::zeros(4);
-
-    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
-    if(ok) solver->getSolutionColloc(sol_state, sol_control);
-    for(int i = 0; i <  sol_state.size2(); ++i){
-        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
-    }
-    // ros::Duration(2).sleep();
-    while(moving());
-}
 
 void doodbot::log_pose(){
-    Pose pose = dobot->Get_Pose();
+    pose = dobot->Get_Pose();
     ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\n", pose.x, pose.y, pose.z, pose.r);
 }
 
@@ -206,6 +194,85 @@ void doodbot::log_board(){
     }
 }
 
+
+void doodbot::moveSto_offline(DM destination){
+    pose = dobot->Get_Pose();
+    path = {1, 0, 0, 0, 0};
+
+    initialState.state = {pose.x, pose.y, pose.z, pose.r};
+    finalState.state = destination;
+    AEKFq.state = DM::zeros(4);
+
+    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
+    if(ok) solver->getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  sol_state.size2(); ++i){
+        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
+    }
+    // ros::Duration(2).sleep();
+    while(moving());
+}
+
+void doodbot::moveC_offline(double circleX, double circleY){
+    pose = dobot->Get_Pose();
+    double circleR = sqrt(pow(pose.x - circleX, 2) + pow(pose.y - circleY, 2));
+    path = {0, 1, circleX, circleY, circleR};
+
+    initialState.state = {pose.x, pose.y, pose.z, pose.r};
+    finalState.state = {circleX + (circleY - pose.y), circleY - (circleX - pose.x), pose.z, pose.r};
+    AEKFq.state = DM::zeros(4);
+
+    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
+    if(ok) solver->getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  sol_state.size2(); ++i){
+        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
+    }
+    // ros::Duration(2).sleep();
+    while(moving());
+
+
+    initialState.state = {circleX + (circleY - pose.y), circleY - (circleX - pose.x), pose.z, pose.r};
+    finalState.state = {circleX + (circleX - pose.x), circleY + (circleY - pose.y), pose.z, pose.r};
+    AEKFq.state = DM::zeros(4);
+
+    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
+    if(ok) solver->getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  sol_state.size2(); ++i){
+        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
+    }
+    // ros::Duration(2).sleep();
+    while(moving());
+
+
+    initialState.state = {circleX + (circleX - pose.x), circleY + (circleY - pose.y), pose.z, pose.r};
+    finalState.state = {circleX - (circleY - pose.y), circleY + (circleX - pose.x), pose.z, pose.r};
+    AEKFq.state = DM::zeros(4);
+
+    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
+    if(ok) solver->getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  sol_state.size2(); ++i){
+        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
+    }
+    // ros::Duration(2).sleep();
+    while(moving());
+
+
+    initialState.state = {circleX - (circleY - pose.y), circleY + (circleX - pose.x), pose.z, pose.r};
+    finalState.state = {pose.x, pose.y, pose.z, pose.r};
+    AEKFq.state = DM::zeros(4);
+
+    ok = solver->solveColloc(initialState, finalState, AEKFq, path);
+    if(ok) solver->getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  sol_state.size2(); ++i){
+        dobot->Send_CP_Cmd(sol_state(0,i).scalar(), sol_state(1,i).scalar(), sol_state(2,i).scalar(), sol_state(3,i).scalar());
+    }
+    // ros::Duration(2).sleep();
+    while(moving());
+}
+
+void doodbot::defaultPose(){
+    moveSto_offline({75, 0, 0, 0});
+}
+
 bool doodbot::moving(){
     Pose pose0 = dobot->Get_Pose();
     ros::Duration(0.1).sleep();
@@ -213,11 +280,45 @@ bool doodbot::moving(){
     return distance(pose0, pose1) > 0.0001;
 }
 
-void doodbot::callback(const std_msgs::Int32MultiArray::ConstPtr& msg){
-    ROS_INFO("callback");
+int doodbot::gameOver(){
+    bool full = true;
     for(int i = 0; i < 3; i++){
         for(int j = 0;j < 3;j++){
-            board[i][j] = msg->data.at(i*3+j);
+            if(board[i][0]==EMPTY){
+                full = false;
+            }
+        }
+    }
+    if(full)return -1;
+
+	for(int i=0;i<3;i++)
+	{
+		if(board[i][0]==O && board[i][1]==O && board[i][2]==O) return O;
+		if(board[i][0]==X && board[i][1]==X && board[i][2]==X) return X;
+	}
+
+	for(int i=0;i<3;i++)
+	{
+		if(board[0][i]==O && board[1][i]==O && board[2][i]==O) return O;
+		if(board[0][i]==X && board[1][i]==X && board[2][i]==X) return X;
+	}
+
+	if((board[0][0]==O&&board[1][1]==O&&board[2][2]==O)||(board[2][0]==O&&board[1][1]==O&&board[0][2]==O)) return O;
+    if((board[0][0]==X&&board[1][1]==X&&board[2][2]==X)||(board[2][0]==X&&board[1][1]==X&&board[0][2]==X)) return X;
+
+	return 0;
+}
+
+void doodbot::callback(const std_msgs::Int32MultiArray::ConstPtr& msg){
+    // ROS_INFO("callback");
+    for(int i = 0; i < 3; i++){
+        for(int j = 0;j < 3;j++){
+            int t = msg->data.at(i*3+j);
+            if(t!=NOBOARD){
+                if(board[i][j] == NOBOARD || board[i][j] == EMPTY){
+                    board[i][j] = msg->data.at(i*3+j);
+                }
+            }
         }
     }
 }
