@@ -44,7 +44,7 @@ doodbot::doodbot(int argc, char **argv){
         }
     }
 
-    msg_sub = n.subscribe("OXstate", 100, &doodbot::callback, this);
+    msg_sub = n.subscribe("OXstate", 1, &doodbot::callback, this);
 }
 
 doodbot::~doodbot(){
