@@ -216,6 +216,18 @@ void Hardware_Interface::Send_CP_Cmd_0(float x, float y, float z, float r){
 
 void Hardware_Interface::Send_END_Cmd(float r,bool effector){
     
+    // PTPCmd cmd;
+    // uint64_t queuedCmdIndex;
+
+    // cmd.ptpMode = PTPMOVJXYZINCMode;
+    // cmd.x = 0;
+    // cmd.y = 0;
+    // cmd.z = 0;
+    // cmd.r = r;
+    // if(SetPTPCmd(&cmd, false, &queuedCmdIndex)!=DobotCommunicate_NoError){
+    //     throw "Communicate Failed";
+    // }
+    // // usleep (100000);
 }
 
 

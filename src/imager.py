@@ -22,7 +22,7 @@ class Predict(object):
 
     def predict_tf(self, image):
         image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
-        _, image = cv2.threshold(image,225,255,cv2.THRESH_BINARY)
+        _, image = cv2.threshold(image,235,255,cv2.THRESH_BINARY)
         image = cv2.copyMakeBorder(image,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
         image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
         image = np.reshape(image, (28, 28, 1)) / 255
@@ -262,16 +262,16 @@ class Imager():
                         OXstate.data[i*3+j] = 1
                         
                 
-        # i = 2
-        # j = 2
-        # tmp = cv2.cvtColor(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190], cv2.COLOR_RGB2GRAY)
-        # _, tmp = cv2.threshold(tmp,225,255,cv2.THRESH_BINARY)
-        # tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
-        # tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
-        # result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
+        i = 0
+        j = 2
+        tmp = cv2.cvtColor(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190], cv2.COLOR_RGB2GRAY)
+        _, tmp = cv2.threshold(tmp,235,255,cv2.THRESH_BINARY)
+        tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
+        tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
+        result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
 
 
-        result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
+        # result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
 
 
         self._pub0.publish(result)

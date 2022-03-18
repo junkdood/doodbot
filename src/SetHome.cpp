@@ -26,9 +26,24 @@ int main(int argc, char **argv){
 
     ros::init(argc, argv, "SetHome");
 
-    HOMECmd cmd;
+    HOMEParams params;
     uint64_t queuedCmdIndex;
-    int res = SetHOMECmd(&cmd, true, &queuedCmdIndex);
+
+    params.x = 85;
+    params.y = 0;
+    params.z = 10;
+    params.r = 0;
+
+    int res = SetHOMEParams(&params, true, &queuedCmdIndex);
+    if (res == DobotCommunicate_NoError) {
+        ROS_INFO("Success");
+    }
+    else{
+        ROS_INFO("Faild, error code: %d",res);
+    }
+
+    HOMECmd cmd;
+    res = SetHOMECmd(&cmd, true, &queuedCmdIndex);
     if (res == DobotCommunicate_NoError) {
         ROS_INFO("Success");
     }
