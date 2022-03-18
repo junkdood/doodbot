@@ -2,6 +2,7 @@
 
 #include "ros/ros.h"
 #include "std_msgs/Int32MultiArray.h"
+#include "doodbot/Gamepad.h"
 
 
 #include "doodbot/Hardware.h"
@@ -10,16 +11,18 @@
 
 
 
-class doodbot{
+class Doodbot{
     public:
-    doodbot(int argc, char **argv);
-    ~doodbot();
+    Doodbot(int argc, char **argv);
+    ~Doodbot();
 
 
     void draw_board();
     void draw_X(double i, double j);
     void draw_O(double i, double j);
     void letsplay();
+
+    void playgamepad();
     
     void log_pose();
     void log_board();
@@ -28,10 +31,13 @@ class doodbot{
     private:
     void moveSto_offline(DM destination);
     void moveC_offline(double circleX, double circleY);
+    void moveG_speed(double x, double y, double z, double r);
+    void endEffector(float r,bool effector);
     void defaultPose();
     bool moving();
     int gameOver();
     void callback(const std_msgs::Int32MultiArray::ConstPtr& msg);
+    void gamepadcallback(const doodbot::Gamepad::ConstPtr& msg);
     double distance(Pose pose0, Pose pose1);
 
     Interface* dobot;

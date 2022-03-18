@@ -55,6 +55,7 @@ find_package(casadi REQUIRED)
 add_message_files(
   FILES
   Board.msg
+  Gamepad.msg
 )
 
 ## Generate services in the 'srv' folder

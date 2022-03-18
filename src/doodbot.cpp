@@ -1,6 +1,6 @@
 #include "doodbot/doodbot.h"
 
-doodbot::doodbot(int argc, char **argv){
+Doodbot::Doodbot(int argc, char **argv){
     if (argc < 2) {
         ROS_ERROR("[USAGE]Application mode (portName)");
         throw "usage wrong";
@@ -44,17 +44,23 @@ doodbot::doodbot(int argc, char **argv){
         }
     }
 
-    msg_sub = n.subscribe("OXstate", 1, &doodbot::callback, this);
+    
 }
 
-doodbot::~doodbot(){
+Doodbot::~Doodbot(){
     delete dobot;
     delete solver;
     delete filter;
     delete player;
 }
 
-void doodbot::letsplay(){
+void Doodbot::playgamepad(){
+    msg_sub = n.subscribe("gamepadState", 2, &Doodbot::gamepadcallback, this);
+    ros::spin();
+}
+
+void Doodbot::letsplay(){
+    msg_sub = n.subscribe("OXstate", 1, &Doodbot::callback, this);
     draw_board();
     while(board[0][0]==NOBOARD){
         ROS_INFO("No board recognized!");
@@ -110,7 +116,7 @@ void doodbot::letsplay(){
 
 
 
-void doodbot::draw_board(){
+void Doodbot::draw_board(){
     moveSto_offline({boardX, boardY + boardStep, penUp, 0});
     moveSto_offline({boardX, boardY + boardStep, penDown, 0});
     moveSto_offline({boardX, boardY - 2*boardStep, penDown, 0});
@@ -134,7 +140,7 @@ void doodbot::draw_board(){
     defaultPose();
 }
 
-void doodbot::draw_X(double i, double j){
+void Doodbot::draw_X(double i, double j){
     double x = chessX - i*boardStep;
     double y = chessY - j*boardStep;
     double size = 10;
@@ -151,7 +157,7 @@ void doodbot::draw_X(double i, double j){
     defaultPose();
 }
 
-void doodbot::draw_O(double i, double j){
+void Doodbot::draw_O(double i, double j){
     double x = chessX - i*boardStep;
     double y = chessY - j*boardStep;
     double size = 10;
@@ -165,12 +171,12 @@ void doodbot::draw_O(double i, double j){
 }
 
 
-void doodbot::log_pose(){
+void Doodbot::log_pose(){
     pose = dobot->Get_Pose();
     ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\n", pose.x, pose.y, pose.z, pose.r);
 }
 
-void doodbot::log_board(){
+void Doodbot::log_board(){
     if(board[0][0] == NOBOARD){
         std::cout<<"No board recognized!"<<std::endl;
         return;
@@ -195,7 +201,9 @@ void doodbot::log_board(){
 }
 
 
-void doodbot::moveSto_offline(DM destination){
+
+
+void Doodbot::moveSto_offline(DM destination){
     pose = dobot->Get_Pose();
     path = {1, 0, 0, 0, 0};
 
@@ -212,7 +220,7 @@ void doodbot::moveSto_offline(DM destination){
     while(moving());
 }
 
-void doodbot::moveC_offline(double circleX, double circleY){
+void Doodbot::moveC_offline(double circleX, double circleY){
     pose = dobot->Get_Pose();
     double circleR = sqrt(pow(pose.x - circleX, 2) + pow(pose.y - circleY, 2));
     path = {0, 1, circleX, circleY, circleR};
@@ -269,18 +277,28 @@ void doodbot::moveC_offline(double circleX, double circleY){
     while(moving());
 }
 
-void doodbot::defaultPose(){
+void Doodbot::moveG_speed(double x, double y, double z, double r){
+    double mul = 5;
+    dobot->Send_CP_Cmd_0(mul*x, mul*y, mul*z, mul*r);
+}
+
+void Doodbot::endEffector(float r,bool effector){
+    double mul = 5;
+    void Send_END_Cmd(mul*r, effector);
+}
+
+void Doodbot::defaultPose(){
     moveSto_offline({75, 0, 0, 0});
 }
 
-bool doodbot::moving(){
+bool Doodbot::moving(){
     Pose pose0 = dobot->Get_Pose();
     ros::Duration(0.1).sleep();
     Pose pose1 = dobot->Get_Pose();
     return distance(pose0, pose1) > 0.0001;
 }
 
-int doodbot::gameOver(){
+int Doodbot::gameOver(){
     bool full = true;
     for(int i = 0; i < 3; i++){
         for(int j = 0;j < 3;j++){
@@ -309,7 +327,7 @@ int doodbot::gameOver(){
 	return 0;
 }
 
-void doodbot::callback(const std_msgs::Int32MultiArray::ConstPtr& msg){
+void Doodbot::callback(const std_msgs::Int32MultiArray::ConstPtr& msg){
     // ROS_INFO("callback");
     for(int i = 0; i < 3; i++){
         for(int j = 0;j < 3;j++){
@@ -323,6 +341,13 @@ void doodbot::callback(const std_msgs::Int32MultiArray::ConstPtr& msg){
     }
 }
 
-double doodbot::distance(Pose pose0, Pose pose1){
+void Doodbot::gamepadcallback(const doodbot::Gamepad::ConstPtr& msg){
+    moveG_speed(msg->joystick_left_x, msg->joystick_left_y, msg->trigger_left - msg->trigger_right, msg->joystick_right_x);
+    if(abs(msg->joystick_right_x) > 0.01 || msg->bumper_right){
+        endEffector(msg->joystick_right_x, msg->bumper_right);
+    }
+}
+
+double Doodbot::distance(Pose pose0, Pose pose1){
     return sqrt(pow(pose0.x-pose1.x,2) + pow(pose0.y-pose1.y,2) + pow(pose0.z-pose1.z, 2) + pow(pose0.r - pose1.r, 2));
 }

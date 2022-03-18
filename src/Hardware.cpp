@@ -197,6 +197,27 @@ void Hardware_Interface::Send_CP_Cmd(float x, float y, float z, float r){
     // usleep (100000);
 }
 
+void Hardware_Interface::Send_CP_Cmd_0(float x, float y, float z, float r){
+
+    CPCmd cmd;
+    uint64_t queuedCmdIndex;
+
+    cmd.cpMode = 0;
+    cmd.x = x;
+    cmd.y = y;
+    cmd.z = z;
+    cmd.velocity = 15;
+
+    if(SetCPCmd(&cmd, true, &queuedCmdIndex)!=DobotCommunicate_NoError){
+        throw "Communicate Failed";
+    }
+    // usleep (100000);
+}
+
+void Hardware_Interface::Send_END_Cmd(float r,bool effector){
+    
+}
+
 
 //#############################################################################
 
@@ -253,6 +274,12 @@ void Simulator_Interface::Send_CP_Cmd(float x, float y, float z, float r){
     // Pose pose;
     // jointAngle_to_xyz(_sim_jointAngle, pose.x, pose.y, pose.z, pose.r);
     // std::cout<<pose.x<<" "<<pose.y<<" "<<pose.z<<" "<<pose.r<<std::endl;
+}
+
+void Simulator_Interface::Send_CP_Cmd_0(float x, float y, float z, float r){
+    Pose pose;
+    jointAngle_to_xyz(_sim_jointAngle, pose.x, pose.y, pose.z, pose.r);
+    xyz_to_jointAngle(pose.x + x, pose.y + y, pose.z + z, pose.r + r, _sim_jointAngle);
 }
 
 bool Simulator_Interface::isValid(){

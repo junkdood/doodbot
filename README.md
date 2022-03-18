@@ -117,4 +117,7 @@ rviz
    catkin_make -DCMAKE_BUILD_TYPE="Release"
    ```
 
-6. to be continue
+6. Xbox 手柄驱动
+   [xpadneo](https://github.com/atar-axis/xpadneo)
+
+7. to be continue
