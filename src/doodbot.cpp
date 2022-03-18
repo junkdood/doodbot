@@ -284,7 +284,7 @@ void Doodbot::moveG_speed(double x, double y, double z, double r){
 
 void Doodbot::endEffector(float r,bool effector){
     double mul = 5;
-    void Send_END_Cmd(mul*r, effector);
+    dobot->Send_END_Cmd(mul*r, effector);
 }
 
 void Doodbot::defaultPose(){
@@ -343,9 +343,9 @@ void Doodbot::callback(const std_msgs::Int32MultiArray::ConstPtr& msg){
 
 void Doodbot::gamepadcallback(const doodbot::Gamepad::ConstPtr& msg){
     moveG_speed(msg->joystick_left_x, msg->joystick_left_y, msg->trigger_left - msg->trigger_right, msg->joystick_right_x);
-    if(abs(msg->joystick_right_x) > 0.01 || msg->bumper_right){
-        endEffector(msg->joystick_right_x, msg->bumper_right);
-    }
+    // if(abs(msg->joystick_right_x) > 0.01 || msg->bumper_right){
+    //     endEffector(msg->joystick_right_x, msg->bumper_right);
+    // }
 }
 
 double Doodbot::distance(Pose pose0, Pose pose1){

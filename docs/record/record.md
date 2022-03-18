@@ -257,3 +257,7 @@ imager的CNN真的很慢，识别一个块0.1秒。9个块就1秒了
 完整下棋逻辑闭环基本完成
 
 <img src="assets/framwork.jpg" alt="framwork" style="zoom:150%;" />
+
+#### 2022-3-18
+
+增加手柄控制支持，还未适配夹子

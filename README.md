@@ -44,6 +44,11 @@ rosrun doodbot imager.py
 rosrun doodbot pretrain.py
 ```
 
+手柄消息发布
+```sh
+rosrun doodbot gamepad.py
+```
+
 运行rosbag模拟相机驱动输出
 ```sh
 rosbag play -l rosbag/camera.bag
