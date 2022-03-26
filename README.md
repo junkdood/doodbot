@@ -44,7 +44,7 @@ rosrun doodbot imager.py
 rosrun doodbot pretrain.py
 ```
 
-手柄消息发布
+读取手柄消息并发布
 ```sh
 rosrun doodbot gamepad.py
 ```
