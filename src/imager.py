@@ -22,7 +22,7 @@ class Predict(object):
 
     def predict_tf(self, image):
         image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
-        _, image = cv2.threshold(image,235,255,cv2.THRESH_BINARY)
+        _, image = cv2.threshold(image,245,255,cv2.THRESH_BINARY)
         image = cv2.copyMakeBorder(image,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
         image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
         image = np.reshape(image, (28, 28, 1)) / 255
@@ -169,14 +169,14 @@ class Imager():
     def findboard(self, image):
         # # 边缘检测
         # image = cv2.GaussianBlur(image, (3,3), 0)
-        edges = cv2.Canny(image, 30, 100)
+        edges = cv2.Canny(image, 30, 70)
 
         # # 角点检测
         # corners = cv2.cornerHarris(edges,2,3,0.045)
         # corners = cv2.dilate(corners,None)
         # image[dst>0.2*dst.max()]=255
 
-        lines = cv2.HoughLines(edges,1,np.pi/180, 100)
+        lines = cv2.HoughLines(edges,1.5,np.pi/180, 100)
 
         if lines is None:
             rospy.loginfo("No line found!")
@@ -185,7 +185,7 @@ class Imager():
             if len(target_lines) < 4:
                 rospy.loginfo("Lines not enough!")
             else:
-                # self.linepainter(lines, image)
+                # self.linepainter(target_lines, image)
                 target_points = self.pointfinder(target_lines)
                 if len(target_points) < 4:
                     rospy.loginfo("Points not enough!")
@@ -262,17 +262,17 @@ class Imager():
                         OXstate.data[i*3+j] = 1
                         
                 
-        i = 0
-        j = 2
-        tmp = cv2.cvtColor(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190], cv2.COLOR_RGB2GRAY)
-        _, tmp = cv2.threshold(tmp,235,255,cv2.THRESH_BINARY)
-        tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
-        tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
-        result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
+        # i = 0
+        # j = 2
+        # tmp = image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190]
+        # tmp = cv2.cvtColor(tmp, cv2.COLOR_RGB2GRAY)
+        # _, tmp = cv2.threshold(tmp,245,255,cv2.THRESH_BINARY)
+        # tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
+        # tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
+        # result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
 
-
-        # result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
-
+        result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
+        
 
         self._pub0.publish(result)
         self._pub1.publish(OXstate)
