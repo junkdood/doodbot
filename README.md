@@ -54,6 +54,13 @@ rosrun doodbot gamepad.py
 rosbag play -l rosbag/camera.bag
 ```
 
+### Xbox控制指南
+
+| key | move |
+| :---: | :----: |
+|左摇杆|前后左右|
+|左右扳机|上升/下降|
+
 ### 键盘控制按键指南
 
 | key | move |
