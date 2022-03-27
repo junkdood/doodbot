@@ -39,8 +39,8 @@ class Interface{
     const double j2_max = 90 * _RPD;
     const double j1_sub_j2_min = -60 * _RPD;
     const double j1_sub_j2_max = 50 * _RPD;
-    const double v_min = -15 * _RPD;
-    const double v_max = 15 * _RPD;
+    const double v_min = -1 * _RPD;
+    const double v_max = 1 * _RPD;
 
     protected:
     const double _l1_2 = _l1*_l1;

@@ -1,0 +1,3 @@
+<launch>
+  <node name="exp" pkg="doodbot" type="exp_node" output="screen"/>
+</launch>

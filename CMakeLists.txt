@@ -253,7 +253,9 @@ add_executable(${PROJECT_NAME}_node src/Hardware.cpp src/solver.cpp src/player.c
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} DobotDll casadi)
 add_dependencies(${PROJECT_NAME}_node doodbot_gencpp)
 
-
+add_executable(exp_node src/Hardware.cpp src/mpcExperiment.cpp src/solver.cpp src/player.cpp)
+target_link_libraries(exp_node ${catkin_LIBRARIES} DobotDll casadi)
+add_dependencies(exp_node doodbot_gencpp)
 
 
 

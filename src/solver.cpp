@@ -82,7 +82,8 @@ void DirectCollocationSolver::setOptColloc(){
             opti.subject_to(X(Slice(), k + 2) == X(Slice(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
             //尽量走直线
-            costFunction += w.path * straightWParameters * mtimes((X(Slice(),k+2)-X(Slice(),k)).T(), (X(Slice(),k+2)-X(Slice(),k)));
+            // costFunction += w.path * straightWParameters * mtimes((X(Slice(),k+2)-X(Slice(),k)).T(), (X(Slice(),k+2)-X(Slice(),k)));
+            costFunction += w.path * straightWParameters * mtimes((X(Slice(),N)-X(Slice(),k)).T(), (X(Slice(),N)-X(Slice(),k)));
 
             //走圆的时候另外两个自由度尽量不变
             costFunction += w.path * circleWParameters * mtimes((X(Slice(2,4),k+2)-X(Slice(2,4),k)).T(), (X(Slice(2,4),k+2)-X(Slice(2,4),k)));
@@ -230,10 +231,10 @@ void KalmanFilter::reset(DM X){
 
     //观测噪声协方差
     R = DM::zeros(4, 4);
-    R(0, 0) = 0.001;
-    R(1, 1) = 0.001;
-    R(2, 2) = 0.001;
-    R(3, 3) = 0.001;
+    // R(0, 0) = 0.001;
+    // R(1, 1) = 0.001;
+    // R(2, 2) = 0.001;
+    // R(3, 3) = 0.001;
 
     //EKF初始置零
     x_cal_pre = X;
@@ -330,10 +331,10 @@ DM KalmanFilter::AEKF_unity(DM control, DM y_meas){
     double d = (1.0 - b)/(1.0 - pow(b, t + 1));
     q = (1 - d)*q + d * (X_AEKF - X_AEKF_cache);
     Q = (1 - d)*Q + d * (mtimes(mtimes(mtimes(k, epsilon), epsilon.T()), k.T()) + P_AEKF - P_AEKF_cache);
-    r = (1 - d)*r + d * epsilon_cache;
-    R = (1 - d)*R + d * (mtimes(mtimes(mtimes((DM::eye(4) - mtimes(k, J_h)), epsilon), epsilon.T()), (DM::eye(4) - mtimes(k, J_h)).T()) + tmp_cache);
+    // r = (1 - d)*r + d * epsilon_cache;
+    // R = (1 - d)*R + d * (mtimes(mtimes(mtimes((DM::eye(4) - mtimes(k, J_h)), epsilon), epsilon.T()), (DM::eye(4) - mtimes(k, J_h)).T()) + tmp_cache);
     t++;
-    std::cout<<R.get_str()<<std::endl;
+    std::cout<<q.get_str()<<std::endl;
 
     return h(X_AEKF);
 }

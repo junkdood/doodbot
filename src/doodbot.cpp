@@ -143,7 +143,7 @@ void Doodbot::draw_board(){
 void Doodbot::draw_X(double i, double j){
     double x = chessX - i*boardStep;
     double y = chessY - j*boardStep;
-    double size = 10;
+    double size = 8;
     moveSto_offline({x, y, penUp, 0});
     moveSto_offline({x+size, y+size, penUp, 0});
     moveSto_offline({x+size, y+size, penDown, 0});
@@ -160,7 +160,7 @@ void Doodbot::draw_X(double i, double j){
 void Doodbot::draw_O(double i, double j){
     double x = chessX - i*boardStep;
     double y = chessY - j*boardStep;
-    double size = 10;
+    double size = 8;
     moveSto_offline({x, y, penUp, 0});
     moveSto_offline({x, y+size, penUp, 0});
     moveSto_offline({x, y+size, penDown, 0});
