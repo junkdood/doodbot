@@ -8,7 +8,7 @@ from cv_bridge import CvBridge
 import numpy as np
 from copy import deepcopy
 import tensorflow as tf
-from pretrain import CNN
+from pretrain import CNN2
 from std_msgs.msg import Int32MultiArray
 
 def get_letter(num):
@@ -16,8 +16,8 @@ def get_letter(num):
 
 class Predict(object):
     def __init__(self):
-        latest = tf.train.latest_checkpoint('./src/doodbot/CNNdata/modelckpt')
-        self.cnn = CNN()
+        latest = tf.train.latest_checkpoint('./src/doodbot/CNNdata/modelckpt2')
+        self.cnn = CNN2()
         self.cnn.model.load_weights(latest)
 
     def predict_tf(self, image):
@@ -249,12 +249,23 @@ class Imager():
                     end_t = rospy.Time.now()
                     rospy.loginfo("Duration: {}".format((end_t - begin_t).to_sec()))
 
-                    if OXsymNum == 15 or OXsymNum == 4:
-                        # O / D
+                    # if OXsymNum == 15 or OXsymNum == 4:
+                    #     # O / D
+                    #     OXresult[i][j] = 'O'
+                    #     OXstate.data[i*3+j] = 2
+                    # elif OXsymNum == 24 or OXsymNum == 25:
+                    #     # X / Y
+                    #     OXresult[i][j] = 'X'
+                    #     OXstate.data[i*3+j] = 3
+                    # else:
+                    #     OXresult[i][j] = ' '
+                    #     OXstate.data[i*3+j] = 1
+                    if OXsymNum == 1:
+                        # O
                         OXresult[i][j] = 'O'
                         OXstate.data[i*3+j] = 2
-                    elif OXsymNum == 24 or OXsymNum == 25:
-                        # X / Y
+                    elif OXsymNum == 2:
+                        # X 
                         OXresult[i][j] = 'X'
                         OXstate.data[i*3+j] = 3
                     else:
