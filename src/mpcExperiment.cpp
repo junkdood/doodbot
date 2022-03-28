@@ -3,6 +3,9 @@
 #include "doodbot/Hardware.h"
 #include "doodbot/solver.h"
 
+std::ofstream track("./src/doodbot/MPCdata/track.csv",std::ios::out);
+std::ofstream goal("./src/doodbot/MPCdata/goal.csv",std::ios::out);
+
 double distance(DM state, DM state_goal){
     return sqrt(mtimes((state-state_goal).T(),state-state_goal).scalar());
 }
@@ -39,11 +42,21 @@ int main(int argc, char **argv){
     bool ok;
 
 
+    track<<"x,"<<"y,"<<"z,"<<"r"<<std::endl;
+    goal<<"x,"<<"y,"<<"z,"<<"r"<<std::endl;
+
+
     pose = dobot.Get_Pose();
     filter.reset({pose.x, pose.y, pose.z, pose.r});
     initialState.state = {pose.x, pose.y, pose.z, pose.r};
     finalState.state = {pose.x + 50, pose.y + 60, pose.z, pose.r};
+    AEKFq.state = DM::zeros(4);
 
+    ok = solver.solveColloc(initialState, finalState, AEKFq, path);
+    if(ok) solver.getSolutionColloc(sol_state, sol_control);
+    for(int i = 0; i <  sol_state.size2(); ++i){
+        goal<<std::setprecision(12)<<sol_state(0,i).scalar()<<","<<std::setprecision(12)<<sol_state(1,i).scalar()<<","<<std::setprecision(12)<<sol_state(2,i).scalar()<<","<<std::setprecision(12)<<sol_state(3,i).scalar()<<std::endl;
+    }
 
 
     while(distance(initialState.state, finalState.state) > 1){
@@ -58,9 +71,13 @@ int main(int argc, char **argv){
         DM X = filter.AEKF_unity(sol_control(Slice(),0), {pose.x, pose.y, pose.z, pose.r});
         // ROS_INFO("\nx:%f\ny:%f\nz:%f\nr:%f\n", pose.x, pose.y, pose.z, pose.r);
         ROS_INFO("\nKFx:%f\nKFy:%f\nKFz:%f\nFr:%f\n", X(0).scalar(), X(1).scalar(), X(2).scalar(), X(3).scalar());
+        track<<std::setprecision(12)<<X(0).scalar()<<","<<std::setprecision(12)<<X(1).scalar()<<","<<std::setprecision(12)<<X(2).scalar()<<","<<std::setprecision(12)<<X(3).scalar()<<std::endl;
 
         initialState.state = X;
         loop_rate.sleep();
     }
 
+
+    track.close();
+    return 0;
 }

@@ -49,6 +49,12 @@ rosrun doodbot pretrain.py
 rosrun doodbot gamepad.py
 ```
 
+跑MPC实验
+```sh
+rosrun doodbot exp_node
+rosrun doodbot lat.py
+```
+
 运行rosbag模拟相机驱动输出
 ```sh
 rosbag play -l rosbag/camera.bag
