@@ -16,6 +16,10 @@ class ChessPlayer{
 
     void PlayChess();
 
+    int AlphaBeta(int &value,int deep,bool MAX);
+    int Value();
+    bool Win();
+
     int GetI();
     int GetJ();
 
@@ -25,4 +29,7 @@ class ChessPlayer{
     int _board[3][3];
     int _decisionI;
     int _decisionJ;
+
+    int AlphaBetaChess[3][3];
+    int AlphaBetacount;
 };

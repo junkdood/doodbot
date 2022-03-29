@@ -44,3 +44,62 @@ int ChessPlayer::GetJ(){
 
     return _decisionJ;
 }
+int ChessPlayer::Value(){
+    return 0;
+}
+
+bool ChessPlayer::Win(){
+    return false;
+}
+
+int ChessPlayer::AlphaBeta(int &value,int deep,bool MAX){
+	bool prune=false;
+	int i,j,flag,temp;        
+    if(deep==3||deep+AlphaBetacount==9){
+        return Value();
+    }           
+    if(Win()==1){
+        value=10000;
+        return 0;
+    }
+
+    if(MAX)                  
+        flag=10000;
+    else
+        flag=-10000;
+    for(i=0;i<3 && !prune;i++){
+        for(j=0;j<3 && !prune;j++){
+            if(AlphaBetaChess[i][j]==0){
+                if(MAX){
+                    AlphaBetaChess[i][j]=-1;
+                    if(Win()==-1)
+                        temp=-10000;
+                    else
+                        temp=AlphaBeta(flag,deep+1,!MAX);
+                    if(temp<flag) flag=temp;                      
+                    if(flag<=value) prune=true;                      
+                }
+                else{
+                    AlphaBetaChess[i][j]=1;
+                    if(Win()==1)
+                        temp=10000;
+                    else
+                        temp=AlphaBeta(flag,deep+1,!MAX);
+                    if(temp>flag) flag=temp;                     
+                    if(flag>=value) prune=true;
+                       
+                }
+                AlphaBetaChess[i][j]=0;
+            }
+        }
+    }
+    if(MAX){
+        if(flag>value)
+            value=flag;
+    }
+    else{
+        if(flag<value)
+            value=flag;
+    }
+    return flag;
+}
