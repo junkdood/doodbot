@@ -41,6 +41,8 @@ Doodbot::Doodbot(int argc, char **argv){
     for(int i = 0; i < 3; i++){
         for(int j = 0;j < 3;j++){
             board[i][j] = 0;
+            boardcacheO[i][j] = 0;
+            boardcacheX[i][j] = 0;
         }
     }
 
@@ -62,6 +64,8 @@ void Doodbot::playgamepad(){
 void Doodbot::letsplay(){
     msg_sub = n.subscribe("OXstate", 1, &Doodbot::callback, this);
     draw_board();
+    ros::Duration(3).sleep();
+    ros::spinOnce();
     while(board[0][0]==NOBOARD){
         ROS_INFO("No board recognized!");
         ros::spinOnce();
@@ -86,11 +90,13 @@ void Doodbot::letsplay(){
         if(flag){
             printf("press ENTER button to go on after you play your turn\n");
             getchar();
+            ros::Duration(3).sleep();
+            ros::spinOnce();
+            ros::spinOnce();
+            log_board();
         }
         else{
-            ros::spinOnce();
-            ros::spinOnce();
-            ros::spinOnce();
+            ros::Duration(3).sleep();
             ros::spinOnce();
             ros::spinOnce();
             log_board();
@@ -331,12 +337,7 @@ void Doodbot::callback(const std_msgs::Int32MultiArray::ConstPtr& msg){
     // ROS_INFO("callback");
     for(int i = 0; i < 3; i++){
         for(int j = 0;j < 3;j++){
-            int t = msg->data.at(i*3+j);
-            if(t!=NOBOARD){
-                if(board[i][j] == NOBOARD || board[i][j] == EMPTY){
-                    board[i][j] = msg->data.at(i*3+j);
-                }
-            }
+            board[i][j] = msg->data.at(i*3+j);
         }
     }
 }

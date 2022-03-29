@@ -49,6 +49,8 @@ class Doodbot{
     ros::Subscriber msg_sub;
 
     int board[3][3];
+    int boardcacheO[3][3];
+    int boardcacheX[3][3];
 
     //棋盘左上角的点和格子宽度
     // [190,15,-60,0][190,-15,-60,0][160,15,-60,0][160,-15,-60,0]
