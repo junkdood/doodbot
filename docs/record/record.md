@@ -272,3 +272,7 @@ imager的CNN真的很慢，识别一个块0.1秒。9个块就1秒了
 CNN特制了一下之后准确率0.9995
 
 <img src="assets/CNNacc.png" alt="CNNacc" style="zoom:100%;" />
+
+#### 2022-3-29
+
+调好环境跑了一遍完整的，录了一次像
