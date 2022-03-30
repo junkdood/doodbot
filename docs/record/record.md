@@ -279,4 +279,6 @@ CNN特制了一下之后准确率0.9995
 
 迷你版：
 
-<video src="assets/minipaly.mp4">您的浏览器不支持播放该视频！</video>
+<video src='assets/minipaly.mp4' width=180/>
+
+
