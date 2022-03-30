@@ -276,10 +276,3 @@ CNN特制了一下之后准确率0.9995
 #### 2022-3-29
 
 调好环境跑了一遍完整的，录了一次像
-
-迷你版：
-
-<video src='assets/minipaly.mp4' width=180></video>
-
-
-<a href="assets/miniplay.mp4" title="演示视频"><img src="assets/real_Play.jpg" alt="演示视频" /></a>

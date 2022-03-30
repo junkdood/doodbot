@@ -1,9 +1,49 @@
-# doodbot
-junkdood的毕业设计机械臂
+# doodbot: 基于计算机视觉的机械臂下棋控制系统
+> 这是junkdood的毕业设计机械臂，借助一个Xbox Kinect体感摄像机实现了自主的人机下棋对弈系统
 
-功能演示：
+简单功能演示视频如下~
 
-<video src="docs/record/assets/minipaly.mp4">您的浏览器不支持播放该视频！</video>
+<a href="docs/record/assets/miniplay.mp4" title="演示视频"><img src="docs/record/assets/real_Play.jpg" alt="演示视频"  style="zoom:50%;" /></a>
+
+---
+
+### 1.项目文件说明 
+
+本项目是一个ROS package，其文件夹结构如下：
+
+- src
+
+  这里存放了项目源代码
+
+- include
+  
+  存放c++的头文件之类的地方
+
+- launch
+
+  这里有一些方便的ROS launch启动脚本
+
+- msg
+
+  自己定义的ROS话题数据类型放这里
+
+- srv
+
+  自己定义的ROS服务数据类型放这里
+
+- CNNdata
+
+  用于存放相机感知模块的卷积神经网络用到的数据和生成的识别模型
+
+- MPCdata
+
+  里面的表格记录了机械臂运动的轨迹，可以用来分析模型预测控制算法的效果
+
+- docs
+
+  有用的文档、写的记录存放的地方
+
+
 
 ### 编译
 假设已经有ros环境和casadi环境（casadi下面有安装步骤）
