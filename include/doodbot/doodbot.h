@@ -62,7 +62,7 @@ class Doodbot{
     const double chessY = boardY + boardStep/2;
 
 
-    //定义笔碰到和不碰到的高度
+    //定义笔不碰到和碰到的高度
     const double penUp = -40;
     const double penDown = -55;
 

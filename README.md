@@ -1,6 +1,9 @@
 # doodbot
 junkdood的毕业设计机械臂
 
+功能演示：
+
+<video src="docs/record/assets/minipaly.mp4">您的浏览器不支持播放该视频！</video>
 
 ### 编译
 假设已经有ros环境和casadi环境（casadi下面有安装步骤）
