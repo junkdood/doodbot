@@ -3,9 +3,9 @@
 #include<bits/stdc++.h>
 
 #define NOBOARD 0
-#define EMPTY 1
-#define O 2
-#define X 3
+#define Pieces_EMPTY 1
+#define Pieces_O 2
+#define Pieces_X 3
 
 class ChessPlayer{
     public:

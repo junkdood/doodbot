@@ -109,10 +109,10 @@ void Doodbot::letsplay(){
 
         flag = !flag;
     }
-    if(gameOver() == O){
+    if(gameOver() == Pieces_O){
         printf("doodbot wins!\n");
     }
-    else if(gameOver() == X){
+    else if(gameOver() == Pieces_X){
         printf("you wins!\n");
     }
     else{
@@ -189,13 +189,13 @@ void Doodbot::log_board(){
     }
     for(int i = 0; i < 3; i++){
         for(int j = 0;j < 3;j++){
-            if(board[i][j] == EMPTY){
+            if(board[i][j] == Pieces_EMPTY){
                 std::cout<<"-"<<" ";
             }
-            else if(board[i][j] == O){
+            else if(board[i][j] == Pieces_O){
                 std::cout<<"O"<<" ";
             }
-            else if(board[i][j] == X){
+            else if(board[i][j] == Pieces_X){
                 std::cout<<"X"<<" ";
             }
             else{
@@ -308,7 +308,7 @@ int Doodbot::gameOver(){
     bool full = true;
     for(int i = 0; i < 3; i++){
         for(int j = 0;j < 3;j++){
-            if(board[i][0]==EMPTY){
+            if(board[i][0]==Pieces_EMPTY){
                 full = false;
             }
         }
@@ -317,18 +317,18 @@ int Doodbot::gameOver(){
 
 	for(int i=0;i<3;i++)
 	{
-		if(board[i][0]==O && board[i][1]==O && board[i][2]==O) return O;
-		if(board[i][0]==X && board[i][1]==X && board[i][2]==X) return X;
+		if(board[i][0]==Pieces_O && board[i][1]==Pieces_O && board[i][2]==Pieces_O) return Pieces_O;
+		if(board[i][0]==Pieces_X && board[i][1]==Pieces_X && board[i][2]==Pieces_X) return Pieces_X;
 	}
 
 	for(int i=0;i<3;i++)
 	{
-		if(board[0][i]==O && board[1][i]==O && board[2][i]==O) return O;
-		if(board[0][i]==X && board[1][i]==X && board[2][i]==X) return X;
+		if(board[0][i]==Pieces_O && board[1][i]==Pieces_O && board[2][i]==Pieces_O) return Pieces_O;
+		if(board[0][i]==Pieces_X && board[1][i]==Pieces_X && board[2][i]==Pieces_X) return Pieces_X;
 	}
 
-	if((board[0][0]==O&&board[1][1]==O&&board[2][2]==O)||(board[2][0]==O&&board[1][1]==O&&board[0][2]==O)) return O;
-    if((board[0][0]==X&&board[1][1]==X&&board[2][2]==X)||(board[2][0]==X&&board[1][1]==X&&board[0][2]==X)) return X;
+	if((board[0][0]==Pieces_O&&board[1][1]==Pieces_O&&board[2][2]==Pieces_O)||(board[2][0]==Pieces_O&&board[1][1]==Pieces_O&&board[0][2]==Pieces_O)) return Pieces_O;
+    if((board[0][0]==Pieces_X&&board[1][1]==Pieces_X&&board[2][2]==Pieces_X)||(board[2][0]==Pieces_X&&board[1][1]==Pieces_X&&board[0][2]==Pieces_X)) return Pieces_X;
 
 	return 0;
 }

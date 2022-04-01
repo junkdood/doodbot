@@ -23,7 +23,7 @@ void ChessPlayer::PlayChess(){
     do{
         _decisionI = rand()%3;
         _decisionJ = rand()%3;
-    }while(_board[_decisionI][_decisionJ]!=EMPTY);
+    }while(_board[_decisionI][_decisionJ]!=Pieces_EMPTY);
     
     _playerstate = ChessPlayer::STATE_SOLVED;
 }
