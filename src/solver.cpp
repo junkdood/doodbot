@@ -205,7 +205,7 @@ void DirectCollocationSolver::getSolutionColloc(DM& state, DM& control){
     control = DM::zeros(4, settings.phaseLength + 1);
     for(int i = 0; i < 2 * settings.phaseLength + 1; ++i){
         if(i % 2 == 0){
-            std::cout <<control_all(Slice(), i) << "\n";
+            // std::cout <<control_all(Slice(), i) << "\n";
             state(Slice(),a) = DM::vertcat({state_all(Slice(), i)});
             control(Slice(),a) = control_all(Slice(), i);
             a++;
