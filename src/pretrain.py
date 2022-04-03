@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # coding:utf-8 
 import os
+import rospy
 import tensorflow as tf
 from tensorflow.keras import layers, models
 import gzip
@@ -191,8 +192,8 @@ class getData2(object):
         train_labels = np.append(train_labels,np.zeros(4800))
         train_images = np.concatenate((train_images,np.array([0]*4800*28*28*1).reshape(4800, 28,28,1)),axis=0)
 
-        test_labels = np.append(test_labels,np.zeros(4800))
-        test_images = np.concatenate((test_images,np.array([0]*4800*28*28*1).reshape(4800, 28,28,1)),axis=0)
+        test_labels = np.append(test_labels,np.zeros(800))
+        test_images = np.concatenate((test_images,np.array([0]*800*28*28*1).reshape(800, 28,28,1)),axis=0)
 
         state = np.random.get_state()
         np.random.set_state(state)
@@ -211,11 +212,49 @@ class getData2(object):
         self.train_images, self.train_labels = train_images, train_labels
         self.test_images, self.test_labels = test_images, test_labels
 
+def active_f(x):
+    return np.maximum(0, x)
+def active_f_g(x):
+    return (x >= 0).astype(int)
+
+class BP:
+    def __init__(self, input_nodes, hidden_nodes, output_nodes, learning_rate):
+        #初始化参数
+        self.__weight1 = np.random.normal(0.0, pow(hidden_nodes, -0.5), (hidden_nodes, input_nodes))
+        self.__weight2 = np.random.normal(0.0, pow(output_nodes, -0.5), (output_nodes, hidden_nodes))
+        self.__learning_rate = learning_rate
+
+    def train(self, t_input, t_target):
+        #前向过程
+        inputs = np.array(t_input, ndmin=2).T
+        targets = np.array(t_target, ndmin=2).T
+        hidden_inputs = np.dot(self.__weight1, inputs)
+        hidden_outputs = active_f(hidden_inputs)
+        final_inputs = np.dot(self.__weight2, hidden_outputs)
+        final_outputs = active_f(final_inputs)
+        
+        #计算误差并反向传播
+        output_errors = targets - final_outputs
+        hidden_errors = np.dot(self.__weight2.T, output_errors)
+        self.__weight2 += self.__learning_rate * np.dot((output_errors * active_f_g(final_inputs)),np.transpose(hidden_outputs))
+        self.__weight1 += self.__learning_rate * np.dot((hidden_errors * active_f_g(hidden_inputs)),(np.transpose(inputs)))
+ 
+    def predict(self, inputs_list):
+        #预测过程只需要进行一个前向传播即可
+        inputs = np.array(inputs_list, ndmin=2).T
+        hidden_inputs = np.dot(self.__weight1, inputs)
+        hidden_outputs = active_f(hidden_inputs)
+        final_inputs = np.dot(self.__weight2, hidden_outputs)
+        final_outputs = active_f(final_inputs)
+        return final_outputs
+
 
 class Train2:
     def __init__(self):
         self.cnn = CNN2()
         self.data = getData2()
+
+        self.bp = BP(784, 20, 3, 0.01)
 
     def train(self):
         check_path = config2['check_path']
@@ -229,7 +268,38 @@ class Train2:
 
         test_loss, test_acc = self.cnn.model.evaluate(self.data.test_images, self.data.test_labels)
         print("准确率: %.4f，共测试了%d张图片 " % (test_acc, len(self.data.test_labels)))
+        begin_t = rospy.Time.now()
+        Num = self.cnn.model.predict(np.array([self.data.test_images[0]]))
+        end_t = rospy.Time.now()
+        print("Duration: {}".format((end_t - begin_t).to_sec()))
+
+
+    def trainBP(self):
+        for _ in range(1):
+            for i in range(len(self.data.train_images)):
+                #调用train进行训练
+                label = [0,0,0]
+                label[int(self.data.train_labels[i])] = 1
+                self.bp.train(self.data.train_images[i].reshape(784),label)
+        acc = []
+        for i in range(len(self.data.test_images)):
+            label = np.argmax(self.bp.predict(self.data.test_images[i].reshape(784)))
+            #选取概率最大的数字为输出，若和标签相同则预测成功
+            if int(self.data.test_labels[i]) == label:
+                acc.append(1)
+            else:
+                acc.append(0)
+        #计算平均准确率
+        print("acc is ", np.array(acc).mean())
+        begin_t = rospy.Time.now()
+        Num = self.bp.predict(self.data.test_images[0].reshape(784))
+        end_t = rospy.Time.now()
+        print("Duration: {}".format((end_t - begin_t).to_sec()))
+
+
 
 if __name__ == "__main__":
+    rospy.init_node('train')
     trainer = Train2()
     trainer.train()
+    # trainer.trainBP()

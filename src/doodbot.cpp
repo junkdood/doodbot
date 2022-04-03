@@ -90,14 +90,16 @@ void Doodbot::letsplay(){
         if(flag){
             printf("press ENTER button to go on after you play your turn\n");
             getchar();
-            ros::Duration(3).sleep();
+            ros::Duration(1.5).sleep();
             ros::spinOnce();
+            ros::Duration(1.5).sleep();
             ros::spinOnce();
             log_board();
         }
         else{
-            ros::Duration(3).sleep();
+            ros::Duration(1.5).sleep();
             ros::spinOnce();
+            ros::Duration(1.5).sleep();
             ros::spinOnce();
             log_board();
             
