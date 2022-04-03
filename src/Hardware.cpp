@@ -282,7 +282,7 @@ void Simulator_Interface::Send_Ctrl_Cmd(float j0, float j1, float j2, float j3, 
     // _sim_jointAngle[3] += generateGaussianNoise(0,sqrt(0.001*_RPD));
 
     // _sim_jointAngle[0] += 0.001;
-    _sim_jointAngle[3] += 0.001*_RPD;
+    // _sim_jointAngle[3] += 0.001*_RPD;
 }
 
 void Simulator_Interface::Send_CP_Cmd(float x, float y, float z, float r){

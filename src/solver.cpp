@@ -82,8 +82,8 @@ void DirectCollocationSolver::setOptColloc(){
             opti.subject_to(X(Slice(), k + 2) == X(Slice(), k) + dT * (f_curr + 4 * f_mid + f_next) / 6);
             
             //尽量走直线
-            costFunction += w.path * straightWParameters * mtimes((X(Slice(),k+2)-X(Slice(),k)).T(), (X(Slice(),k+2)-X(Slice(),k)));
-            // costFunction += w.path * straightWParameters * mtimes((X(Slice(),N)-X(Slice(),k)).T(), (X(Slice(),N)-X(Slice(),k)));
+            // costFunction += w.path * straightWParameters * mtimes((X(Slice(),k+2)-X(Slice(),k)).T(), (X(Slice(),k+2)-X(Slice(),k)));
+            costFunction += w.path * straightWParameters * mtimes((X(Slice(),N)-X(Slice(),k)).T(), (X(Slice(),N)-X(Slice(),k)));
 
             //走圆的时候另外两个自由度尽量不变
             costFunction += w.path * circleWParameters * mtimes((X(Slice(2,4),k+2)-X(Slice(2,4),k)).T(), (X(Slice(2,4),k+2)-X(Slice(2,4),k)));
@@ -205,7 +205,7 @@ void DirectCollocationSolver::getSolutionColloc(DM& state, DM& control){
     control = DM::zeros(4, settings.phaseLength + 1);
     for(int i = 0; i < 2 * settings.phaseLength + 1; ++i){
         if(i % 2 == 0){
-            //std::cout <<"i\n" << i << "\n"<<control_all(Slice(), i) << "\n\n";
+            std::cout <<control_all(Slice(), i) << "\n";
             state(Slice(),a) = DM::vertcat({state_all(Slice(), i)});
             control(Slice(),a) = control_all(Slice(), i);
             a++;

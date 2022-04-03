@@ -21,8 +21,8 @@ Doodbot::Doodbot(int argc, char **argv){
     }
 
     Settings settings;
-    settings.phaseLength = 20;
-    settings.time = 5;
+    settings.phaseLength = 200;
+    settings.time = 50;
     settings._costWeights.control = 0;
     settings._costWeights.path = 1;
     settings.solverVerbosity = 0;
