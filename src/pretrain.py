@@ -20,6 +20,7 @@ config = {
 
 config2 = {
     'check_path': "./src/doodbot/CNNdata/modelckpt2/cp-{epoch:04d}.ckpt",
+    'BP_path': "./src/doodbot/CNNdata/modelBP/result.npz",
     'class_num': 3,
     'data_sets': [
         './src/doodbot/CNNdata/dataset/emnist-letters-train-labels-idx1-ubyte.gz',
@@ -218,8 +219,12 @@ def active_f_g(x):
     return (x >= 0).astype(int)
 
 class BP:
-    def __init__(self, input_nodes, hidden_nodes, output_nodes, learning_rate):
+    def __init__(self):
         #初始化参数
+        input_nodes = 784
+        hidden_nodes = 20
+        output_nodes = config2['class_num']
+        learning_rate = 0.01
         self.__weight1 = np.random.normal(0.0, pow(hidden_nodes, -0.5), (hidden_nodes, input_nodes))
         self.__weight2 = np.random.normal(0.0, pow(output_nodes, -0.5), (output_nodes, hidden_nodes))
         self.__learning_rate = learning_rate
@@ -248,13 +253,22 @@ class BP:
         final_outputs = active_f(final_inputs)
         return final_outputs
 
+    def saveweight(self, path):
+        np.savez(path, weight1 = self.__weight1, weight2 = self.__weight2)
+
+    def loadweight(self, path):
+        weight = np.load(path)
+        self.__weight1 = weight['weight1']
+        self.__weight2 = weight['weight2']
+
+
 
 class Train2:
     def __init__(self):
         self.cnn = CNN2()
         self.data = getData2()
 
-        self.bp = BP(784, 20, 3, 0.01)
+        self.bp = BP()
 
     def train(self):
         check_path = config2['check_path']
@@ -275,12 +289,13 @@ class Train2:
 
 
     def trainBP(self):
-        for _ in range(1):
+        for _ in range(3):
             for i in range(len(self.data.train_images)):
                 #调用train进行训练
                 label = [0,0,0]
                 label[int(self.data.train_labels[i])] = 1
                 self.bp.train(self.data.train_images[i].reshape(784),label)
+        self.bp.saveweight(config2['BP_path'])
         acc = []
         for i in range(len(self.data.test_images)):
             label = np.argmax(self.bp.predict(self.data.test_images[i].reshape(784)))
@@ -301,5 +316,5 @@ class Train2:
 if __name__ == "__main__":
     rospy.init_node('train')
     trainer = Train2()
-    trainer.train()
-    # trainer.trainBP()
+    # trainer.train()
+    trainer.trainBP()

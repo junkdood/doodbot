@@ -9,11 +9,12 @@ import numpy as np
 from copy import deepcopy
 import tensorflow as tf
 from pretrain import CNN2
+from pretrain import BP
 from std_msgs.msg import Int32MultiArray
 
 def get_letter(num):
     return chr(num + 64) + " / " + chr(num + 96)  # 大写/小写字母
-
+# 用于预测字母的接口，已废弃，整合进Imager了
 class Predict(object):
     def __init__(self):
         latest = tf.train.latest_checkpoint('./src/doodbot/CNNdata/modelckpt2')
@@ -41,14 +42,25 @@ class Predict(object):
 class Imager():
     def __init__(self):
 
+        # CNN 相关
+        # self._predicter = Predict()
+        latest = tf.train.latest_checkpoint('./src/doodbot/CNNdata/modelckpt2')
+        self._cnn = CNN2()
+        self._cnn.model.load_weights(latest)
+
+        self._BP = BP()
+        self._BP.loadweight('./src/doodbot/CNNdata/modelBP/result.npz')
+
+
+        # ROS 相关
         self._bridge = CvBridge()
-        self._predicter = Predict()
-
-
         self._sub = rospy.Subscriber('kinect2/hd/image_color', Image, self.callback, queue_size=1)
         self._pub0 = rospy.Publisher('newimage', Image, queue_size=1)
         self._pub1 = rospy.Publisher('OXstate', Int32MultiArray, queue_size=1)
-        self.rate = rospy.Rate(10)
+        self._rate = rospy.Rate(10)
+
+        # 自适应参数
+        self._binpara = 238
 
 
     def linepainter(self, lines, image):
@@ -212,6 +224,34 @@ class Imager():
         M = cv2.getPerspectiveTransform(p1,p2)
         return cv2.warpPerspective(image, M, (1000, 1000))
 
+
+    def predict(self, image):
+        # 预测OX
+        image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+        _, image = cv2.threshold(image,self._binpara,255,cv2.THRESH_BINARY)
+        image = cv2.copyMakeBorder(image,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
+        image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
+        image = np.reshape(image, (28, 28, 1)) / 255
+        x = np.array([1 - image])
+
+        y = self._cnn.model.predict(x)
+
+        # print(np.argmax(y[0]))
+        return np.argmax(y[0])
+
+    def predictBP(self, image):
+        # 预测OX
+        image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+        _, image = cv2.threshold(image,self._binpara,255,cv2.THRESH_BINARY)
+        image = cv2.copyMakeBorder(image,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
+        image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
+        image = np.reshape(image, (784)) / 255
+        x = 1 - image
+
+        y = self._BP.predict(x)
+
+        # print(np.argmax(y))
+        return np.argmax(y)
         
 
     def callback(self, image_in):
@@ -245,7 +285,7 @@ class Imager():
             for i in range(3):
                 for j in range(3):
                     begin_t = rospy.Time.now()
-                    OXsymNum = self._predicter.predict_tf(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190])
+                    OXsymNum = self.predictBP(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190])
                     end_t = rospy.Time.now()
                     rospy.loginfo("Duration: {}".format((end_t - begin_t).to_sec()))
 
@@ -277,7 +317,7 @@ class Imager():
         # j = 2
         # tmp = image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190]
         # tmp = cv2.cvtColor(tmp, cv2.COLOR_RGB2GRAY)
-        # _, tmp = cv2.threshold(tmp,238,255,cv2.THRESH_BINARY)
+        # _, tmp = cv2.threshold(tmp,self._binpara,255,cv2.THRESH_BINARY)
         # tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
         # tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
         # result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
