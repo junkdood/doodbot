@@ -17,28 +17,28 @@ class Doodbot{
     ~Doodbot();
 
 
-    void draw_board();
-    void draw_X(double i, double j);
-    void draw_O(double i, double j);
-    void letsplay();
+    void draw_board();//画棋盘
+    void draw_X(double i, double j);//在ij位置画X
+    void draw_O(double i, double j);//在ij位置画O
+    void letsplay();//对弈主逻辑
 
-    void playgamepad();
+    void playgamepad();//手柄控制
     
-    void log_pose();
-    void log_board();
+    void log_pose();//输出位姿
+    void log_board();//输出棋盘
     
 
     private:
-    void moveSto_offline(DM destination);
-    void moveC_offline(double circleX, double circleY);
-    void moveG_speed(double x, double y, double z, double r);
-    void endEffector(float r,bool effector);
-    void defaultPose();
-    bool moving();
-    int gameOver();
-    void callback(const std_msgs::Int32MultiArray::ConstPtr& msg);
-    void gamepadcallback(const doodbot::Gamepad::ConstPtr& msg);
-    double distance(Pose pose0, Pose pose1);
+    void moveSto_offline(DM destination);//直线
+    void moveC_offline(double circleX, double circleY);//圆圈
+    void moveG_speed(double x, double y, double z, double r);//手柄控制，发送速度
+    void endEffector(float r,bool effector);//末端控制器，未实现
+    void defaultPose();//重置默认位置
+    bool moving();//判断机械臂是否在移动
+    int gameOver();//判断游戏是否结束，可以考虑整合到player里面
+    void callback(const std_msgs::Int32MultiArray::ConstPtr& msg);//用于获取棋盘状态的回调函数
+    void gamepadcallback(const doodbot::Gamepad::ConstPtr& msg);//由于获取手柄信息的回调函数
+    double distance(Pose pose0, Pose pose1);//计算位姿直接距离
 
     Interface* dobot;
     DirectCollocationSolver* solver;
