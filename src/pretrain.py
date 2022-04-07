@@ -21,7 +21,7 @@ config = {
 config2 = {
     'check_path': "./src/doodbot/CNNdata/modelckpt2/cp-{epoch:04d}.ckpt",
     'BP_path': "./src/doodbot/CNNdata/modelBP/result.npz",
-    'class_num': 3,
+    'class_num': 4,
     'data_sets': [
         './src/doodbot/CNNdata/dataset/emnist-letters-train-labels-idx1-ubyte.gz',
         './src/doodbot/CNNdata/dataset/emnist-letters-train-images-idx3-ubyte.gz',
@@ -189,12 +189,17 @@ class getData2(object):
         print("testX:",X)
 
         
-        
+        # 全白样本
         train_labels = np.append(train_labels,np.zeros(4800))
         train_images = np.concatenate((train_images,np.array([0]*4800*28*28*1).reshape(4800, 28,28,1)),axis=0)
-
         test_labels = np.append(test_labels,np.zeros(800))
         test_images = np.concatenate((test_images,np.array([0]*800*28*28*1).reshape(800, 28,28,1)),axis=0)
+
+        # 全黑样本
+        train_labels = np.append(train_labels,np.zeros(4800)+3)
+        train_images = np.concatenate((train_images,np.array([1]*4800*28*28*1).reshape(4800, 28,28,1)),axis=0)
+        test_labels = np.append(test_labels,np.zeros(800)+3)
+        test_images = np.concatenate((test_images,np.array([1]*800*28*28*1).reshape(800, 28,28,1)),axis=0)
 
         state = np.random.get_state()
         np.random.set_state(state)
@@ -222,7 +227,7 @@ class BP:
     def __init__(self):
         #初始化参数
         input_nodes = 784
-        hidden_nodes = 20
+        hidden_nodes = 50
         output_nodes = config2['class_num']
         learning_rate = 0.01
         self.__weight1 = np.random.normal(0.0, pow(hidden_nodes, -0.5), (hidden_nodes, input_nodes))
@@ -289,10 +294,11 @@ class Train2:
 
 
     def trainBP(self):
-        for _ in range(3):
+        for epo in range(3):
+            print(epo)
             for i in range(len(self.data.train_images)):
                 #调用train进行训练
-                label = [0,0,0]
+                label = [0,0,0,0]
                 label[int(self.data.train_labels[i])] = 1
                 self.bp.train(self.data.train_images[i].reshape(784),label)
         self.bp.saveweight(config2['BP_path'])
@@ -307,7 +313,8 @@ class Train2:
         #计算平均准确率
         print("acc is ", np.array(acc).mean())
         begin_t = rospy.Time.now()
-        Num = self.bp.predict(self.data.test_images[0].reshape(784))
+        Num = self.bp.predict(np.array([1]*28*28*1).reshape(784))
+        print(Num)
         end_t = rospy.Time.now()
         print("Duration: {}".format((end_t - begin_t).to_sec()))
 
@@ -316,5 +323,5 @@ class Train2:
 if __name__ == "__main__":
     rospy.init_node('train')
     trainer = Train2()
-    # trainer.train()
-    trainer.trainBP()
+    trainer.train()
+    # trainer.trainBP()

@@ -60,7 +60,8 @@ class Imager():
         self._rate = rospy.Rate(10)
 
         # 自适应参数
-        self._binpara = 238
+        self._binpara = 255
+        self._border = 15
 
 
     def linepainter(self, lines, image):
@@ -229,7 +230,7 @@ class Imager():
         # 预测OX
         image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
         _, image = cv2.threshold(image,self._binpara,255,cv2.THRESH_BINARY)
-        image = cv2.copyMakeBorder(image,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
+        image = cv2.copyMakeBorder(image,self._border,self._border,self._border,self._border, cv2.BORDER_CONSTANT,value=(255 if len(image[image==255])>len(image[image==0]) else 0))
         image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
         image = np.reshape(image, (28, 28, 1)) / 255
         x = np.array([1 - image])
@@ -243,7 +244,7 @@ class Imager():
         # 预测OX
         image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
         _, image = cv2.threshold(image,self._binpara,255,cv2.THRESH_BINARY)
-        image = cv2.copyMakeBorder(image,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
+        image = cv2.copyMakeBorder(image,self._border,self._border,self._border,self._border, cv2.BORDER_CONSTANT,value=(255 if len(image[image==255])>len(image[image==0]) else 0))
         image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
         image = np.reshape(image, (784)) / 255
         x = 1 - image
@@ -252,12 +253,47 @@ class Imager():
 
         # print(np.argmax(y))
         return np.argmax(y)
+
+    def finetune(self, image):
+        # 自适应调优
+
+        # 全白或全黑直接变
+        image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
+        _, image0 = cv2.threshold(image,self._binpara,255,cv2.THRESH_BINARY)
+
+        if len(image0[image0==255]) < 5000:
+            self._binpara -= 1
+            return
+        if len(image0[image0==0]) < 2500 :
+            self._binpara += 1
+            return
+
+        # 利用神经网络结果进行调整
+        length = 7
+        steps = np.arange(length)
+        steps -= int(length/2)
+        result = np.zeros(length)
+        for i in range(len(steps)):
+            _, temp = cv2.threshold(image,self._binpara + steps[i], 255, cv2.THRESH_BINARY)
+            temp = cv2.copyMakeBorder(temp,self._border,self._border,self._border,self._border, cv2.BORDER_CONSTANT,value= (255 if len(temp[temp==255])>len(temp[temp==0]) else 0) )
+            temp = cv2.resize(cv2.rotate(cv2.flip(temp,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
+            temp = np.reshape(temp, (784)) / 255
+            temp = 1 - temp
+            y = self._BP.predict(temp)
+            # temp = np.reshape(temp, (28, 28, 1)) / 255
+            # temp = np.array([1 - temp])
+            # y = self._cnn.model.predict(temp)[0]
+            para = [-0.33, 1, -0.33, -0.33]
+            for i in range(4):
+                result[i] += para[i]*y[i]
+        # print(result)
+        self._binpara += steps[np.argmax(result)]
         
 
     def callback(self, image_in):
-        image_cv = self._bridge.imgmsg_to_cv2(image_in, desired_encoding='bgr8')
+        image_in = self._bridge.imgmsg_to_cv2(image_in, desired_encoding='bgr8')
 
-        image_cv = self.preprocess(image_cv)
+        image_cv = self.preprocess(image_in)
 
         crosspoints = self.findboard(image_cv)
 
@@ -279,15 +315,21 @@ class Imager():
             for crosspoint in crosspoints:
                 # cv2.circle(image_cv,(crosspoint[0],crosspoint[1]),1,(0,255,0),4)
                 rospy.loginfo("x:{}, y:{}".format(crosspoint[0],crosspoint[1]))
+                rows, cols, _ = image_in.shape
+                crosspoint[0] += cols*0.27
+                crosspoint[1] += rows*0.65
 
-            image_cv = self.projection(crosspoints, image_cv)
+            image_cv = self.projection(crosspoints, image_in)
+
+            self.finetune(image_cv[200 + 1*200 + self._border: 200 + 1*200 + 200 - self._border, 200 + 1*200 + self._border: 200 + 1*200 + 200 - self._border])
+            print(self._binpara)
 
             for i in range(3):
                 for j in range(3):
-                    begin_t = rospy.Time.now()
-                    OXsymNum = self.predictBP(image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190])
-                    end_t = rospy.Time.now()
-                    rospy.loginfo("Duration: {}".format((end_t - begin_t).to_sec()))
+                    # begin_t = rospy.Time.now()
+                    OXsymNum = self.predictBP(image_cv[200 + i*200 + self._border: 200 + i*200 + 200 - self._border, 200 + j*200 + self._border: 200 + j*200 + 200 - self._border])
+                    # end_t = rospy.Time.now()
+                    # rospy.loginfo("Duration: {}".format((end_t - begin_t).to_sec()))
 
                     # if OXsymNum == 15 or OXsymNum == 4:
                     #     # O / D
@@ -313,12 +355,12 @@ class Imager():
                         OXstate.data[i*3+j] = 1
                         
                 
-        # i = 2
-        # j = 2
-        # tmp = image_cv[200 + i*200 + 10: 200 + i*200 + 190, 200 + j*200 + 10: 200 + j*200 + 190]
+        # i = 1
+        # j = 1
+        # tmp = image_cv[200 + i*200 + self._border: 200 + i*200 + 200 - self._border, 200 + j*200 + self._border: 200 + j*200 + 200 - self._border]
         # tmp = cv2.cvtColor(tmp, cv2.COLOR_RGB2GRAY)
         # _, tmp = cv2.threshold(tmp,self._binpara,255,cv2.THRESH_BINARY)
-        # tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
+        # tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=(255 if len(tmp[tmp==255])>len(tmp[tmp==0]) else 0))
         # tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
         # result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
 
