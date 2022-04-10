@@ -70,22 +70,26 @@ void Doodbot::letsplay(){
         ROS_INFO("No board recognized!");
         ros::spinOnce();
     }
-    printf("who first, you or doodbot?\n'x' for you\n'o' for doobot\n");
-    char first;
     bool flag = true;
-    while(1){
-        int t = scanf("%c",&first);
-        getchar();
-        if(first=='x'){
-            flag = true;
-            break;
-        }
-        else if(first=='o'){
-            flag = false;
-            break;
-        }
-        printf("\nYou press a wrong letter\nplease enter again:");
-    }
+
+    // printf("who first, you or doodbot?\n'x' for you\n'o' for doobot\n");
+    // char first;
+    // while(1){
+    //     int t = scanf("%c",&first);
+    //     getchar();
+    //     if(first=='x'){
+    //         flag = true;
+    //         break;
+    //     }
+    //     else if(first=='o'){
+    //         flag = false;
+    //         break;
+    //     }
+    //     printf("\nYou press a wrong letter\nplease enter again:");
+    // }
+
+    draw_O(1, 1);
+
     while(!gameOver()){
         if(flag){
             printf("press ENTER button to go on after you play your turn\n");
@@ -107,8 +111,6 @@ void Doodbot::letsplay(){
             player->PlayChess();
             draw_O(player->GetI(), player->GetJ());
         }
-
-
         flag = !flag;
     }
     if(gameOver() == Pieces_O){

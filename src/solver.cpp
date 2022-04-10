@@ -334,7 +334,7 @@ DM KalmanFilter::AEKF_unity(DM control, DM y_meas){
     // r = (1 - d)*r + d * epsilon_cache;
     // R = (1 - d)*R + d * (mtimes(mtimes(mtimes((DM::eye(4) - mtimes(k, J_h)), epsilon), epsilon.T()), (DM::eye(4) - mtimes(k, J_h)).T()) + tmp_cache);
     t++;
-    std::cout<<q.get_str()<<std::endl;
+    // std::cout<<q.get_str()<<std::endl;
 
     return h(X_AEKF);
 }
