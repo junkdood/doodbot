@@ -327,7 +327,7 @@ class Imager():
             for i in range(3):
                 for j in range(3):
                     # begin_t = rospy.Time.now()
-                    OXsymNum = self.predictBP(image_cv[200 + i*200 + self._border: 200 + i*200 + 200 - self._border, 200 + j*200 + self._border: 200 + j*200 + 200 - self._border])
+                    OXsymNum = self.predict(image_cv[200 + i*200 + self._border: 200 + i*200 + 200 - self._border, 200 + j*200 + self._border: 200 + j*200 + 200 - self._border])
                     # end_t = rospy.Time.now()
                     # rospy.loginfo("Duration: {}".format((end_t - begin_t).to_sec()))
 
@@ -355,16 +355,16 @@ class Imager():
                         OXstate.data[i*3+j] = 1
                         
                 
-        # i = 1
-        # j = 1
-        # tmp = image_cv[200 + i*200 + self._border: 200 + i*200 + 200 - self._border, 200 + j*200 + self._border: 200 + j*200 + 200 - self._border]
-        # tmp = cv2.cvtColor(tmp, cv2.COLOR_RGB2GRAY)
-        # _, tmp = cv2.threshold(tmp,self._binpara,255,cv2.THRESH_BINARY)
-        # tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=(255 if len(tmp[tmp==255])>len(tmp[tmp==0]) else 0))
-        # tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
-        # result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
+        i = 1
+        j = 1
+        tmp = image_cv[200 + i*200 + self._border: 200 + i*200 + 200 - self._border, 200 + j*200 + self._border: 200 + j*200 + 200 - self._border]
+        tmp = cv2.cvtColor(tmp, cv2.COLOR_RGB2GRAY)
+        _, tmp = cv2.threshold(tmp,self._binpara,255,cv2.THRESH_BINARY)
+        tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=(255 if len(tmp[tmp==255])>len(tmp[tmp==0]) else 0))
+        tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
+        result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
 
-        result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
+        # result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
         
 
         self._pub0.publish(result)
