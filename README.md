@@ -181,4 +181,9 @@ rviz
 6. Xbox 手柄驱动
    [xpadneo](https://github.com/atar-axis/xpadneo)
 
-7. to be continue
+7. joy-con 手柄驱动
+   ```sh
+   pip3 install joycon-python hidapi pyglm
+   ```
+
+8. to be continue
