@@ -71,7 +71,7 @@ roslaunch doodbot sethome.launch
 roslaunch doodbot jog.launch
 ```
 
-跑模型预测控制
+跑模型预测控制(已弃用)
 ```sh
 roslaunch doodbot hardware_test.launch
 ```
