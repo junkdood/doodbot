@@ -12,9 +12,9 @@ int main(int argc, char **argv){
     // junkdood.draw_X(2, 0);
     // junkdood.draw_O(2, 2);
 
-    // junkdood.letsplay();
+    junkdood.letsplay();
 
-    junkdood.playgamepad();
+    // junkdood.playgamepad();
 
     return 0;
 }

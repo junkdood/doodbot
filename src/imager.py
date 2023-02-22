@@ -291,12 +291,11 @@ class Imager():
         
 
     def callback(self, image_in):
+        # begin_t = rospy.Time.now()
+
         image_in = self._bridge.imgmsg_to_cv2(image_in, desired_encoding='bgr8')
-
         image_cv = self.preprocess(image_in)
-
         crosspoints = self.findboard(image_cv)
-
 
         OXresult = [
             [' ', ' ', ' '],
@@ -330,18 +329,7 @@ class Imager():
                     OXsymNum = self.predict(image_cv[200 + i*200 + self._border: 200 + i*200 + 200 - self._border, 200 + j*200 + self._border: 200 + j*200 + 200 - self._border])
                     # end_t = rospy.Time.now()
                     # rospy.loginfo("Duration: {}".format((end_t - begin_t).to_sec()))
-
-                    # if OXsymNum == 15 or OXsymNum == 4:
-                    #     # O / D
-                    #     OXresult[i][j] = 'O'
-                    #     OXstate.data[i*3+j] = 2
-                    # elif OXsymNum == 24 or OXsymNum == 25:
-                    #     # X / Y
-                    #     OXresult[i][j] = 'X'
-                    #     OXstate.data[i*3+j] = 3
-                    # else:
-                    #     OXresult[i][j] = ' '
-                    #     OXstate.data[i*3+j] = 1
+                    
                     if OXsymNum == 1:
                         # O
                         OXresult[i][j] = 'O'
@@ -354,15 +342,6 @@ class Imager():
                         OXresult[i][j] = ' '
                         OXstate.data[i*3+j] = 1
                         
-                
-        # i = 1
-        # j = 1
-        # tmp = image_cv[200 + i*200 + self._border: 200 + i*200 + 200 - self._border, 200 + j*200 + self._border: 200 + j*200 + 200 - self._border]
-        # tmp = cv2.cvtColor(tmp, cv2.COLOR_RGB2GRAY)
-        # _, tmp = cv2.threshold(tmp,self._binpara,255,cv2.THRESH_BINARY)
-        # tmp = cv2.copyMakeBorder(tmp,10,10,10,10, cv2.BORDER_CONSTANT,value=(255 if len(tmp[tmp==255])>len(tmp[tmp==0]) else 0))
-        # tmp = cv2.cvtColor(tmp, cv2.COLOR_GRAY2RGB)
-        # result = self._bridge.cv2_to_imgmsg(tmp, encoding='bgr8')
 
         result = self._bridge.cv2_to_imgmsg(image_cv, encoding='bgr8')
         
@@ -372,6 +351,9 @@ class Imager():
         print(OXresult[0])
         print(OXresult[1])
         print(OXresult[2])
+
+        # end_t = rospy.Time.now()
+        # rospy.loginfo("Duration: {}".format((end_t - begin_t).to_sec()))
 
     def main(self):
         rospy.spin()

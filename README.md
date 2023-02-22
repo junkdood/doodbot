@@ -103,6 +103,18 @@ rosrun doodbot lat.py
 rosbag play -l rosbag/camera.bag
 ```
 
+### TODO
+
+现在的图像识别速度很慢
+```
+         topic             rate   min_delta   max_delta   std_dev   window
+==========================================================================
+/OXstate                  1.5     0.5661      0.7845      0.04445   107   
+/kinect2/hd/image_color   39.08   0.006238    0.05376     0.01023   107
+```
+
+可以看到话题输入`/kinect2/hd/image_color`可以达到40帧，话题输出`/OXstate`只有1.5帧。考虑用KubeEdge加速。
+
 ### Xbox控制指南
 
 | key | move |
