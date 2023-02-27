@@ -60,8 +60,8 @@ class getData(object):
         test_labels = read_idx1(files[2])
         test_images, test_images_num = read_idx3(files[3])
 
-        train_images = train_images.reshape((train_images_num, 28, 28, 1))
-        test_images = test_images.reshape((test_images_num, 28, 28, 1))
+        train_images = train_images.reshape((train_images_num, 1, 28, 28))
+        test_images = test_images.reshape((test_images_num, 1, 28, 28))
 
         train_images, test_images = train_images / 255.0, test_images / 255.0
 
@@ -104,15 +104,15 @@ class getData(object):
         
         # 全白样本
         train_labels = np.append(train_labels,np.zeros(4800))
-        train_images = np.concatenate((train_images,np.array([0]*4800*28*28*1).reshape(4800, 28,28,1)),axis=0)
+        train_images = np.concatenate((train_images,np.array([0]*4800*28*28*1).reshape(4800,1, 28,28)),axis=0)
         test_labels = np.append(test_labels,np.zeros(800))
-        test_images = np.concatenate((test_images,np.array([0]*800*28*28*1).reshape(800, 28,28,1)),axis=0)
+        test_images = np.concatenate((test_images,np.array([0]*800*28*28*1).reshape(800,1, 28,28)),axis=0)
 
         # 全黑样本
         train_labels = np.append(train_labels,np.zeros(4800)+3)
-        train_images = np.concatenate((train_images,np.array([1]*4800*28*28*1).reshape(4800, 28,28,1)),axis=0)
+        train_images = np.concatenate((train_images,np.array([1]*4800*28*28*1).reshape(4800,1, 28,28)),axis=0)
         test_labels = np.append(test_labels,np.zeros(800)+3)
-        test_images = np.concatenate((test_images,np.array([1]*800*28*28*1).reshape(800, 28,28,1)),axis=0)
+        test_images = np.concatenate((test_images,np.array([1]*800*28*28*1).reshape(800,1, 28,28)),axis=0)
 
         state = np.random.get_state()
         np.random.set_state(state)
@@ -173,7 +173,8 @@ class CNN(nn.Module):
         
     def forward(self, x):        
         x = self.conv1(x)        
-        x = self.conv2(x)        
+        x = self.conv2(x)       
+        x = self.conv3(x)  
         x = x.view(x.size(0), -1)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
         x = self.fc(x)
         output = self.out(x)        
@@ -240,14 +241,17 @@ class Train:
     def train(self):
         optimizer = torch.optim.Adam(self.cnn.parameters())
         self.cnn.to(device)
-        images_tensor = torch.from_numpy(self.data.train_images).to(device)
-        labels_tensor = torch.from_numpy(self.data.train_labels).to(device)
+        train_images = torch.from_numpy(self.data.train_images).float().to(device)
+        test_images = torch.from_numpy(self.data.test_images).float().to(device)
+        train_labels = torch.from_numpy(self.data.train_labels).long().to(device)
+        test_labels = torch.from_numpy(self.data.test_labels).long().to(device)
 
         self.cnn.train()
         for local_epoch in range(20):
+            print(local_epoch)
             optimizer.zero_grad()
-            out_tensor = self.cnn(images_tensor)
-            loss = torch.nn.Nllloss()(torch.log(out_tensor), labels_tensor)
+            out_tensor = self.cnn(train_images)
+            loss = torch.nn.CrossEntropyLoss()(out_tensor, train_labels)
             loss.backward()
             optimizer.step()
 
@@ -256,10 +260,10 @@ class Train:
         self.cnn.eval()
         with torch.no_grad():
             acc = []
-            for i in range(len(images_tensor)):
-                label = torch.argmax(self.cnn(images_tensor[i]))
+            for i in range(len(test_images)):
+                label = torch.argmax(self.cnn(test_images[i:i+1])[0])
                 #选取概率最大的数字为输出，若和标签相同则预测成功
-                if int(labels_tensor[i]) == label:
+                if int(test_labels[i]) == label:
                     acc.append(1)
                 else:
                     acc.append(0)
@@ -267,7 +271,7 @@ class Train:
             print("acc is ", np.array(acc).mean())
 
             begin_t = rospy.Time.now()
-            out = self.cnn(images_tensor[0])
+            out = self.cnn(test_images[i:i+1])[0]
             print(out)
             end_t = rospy.Time.now()
             print("Duration: {}".format((end_t - begin_t).to_sec()))

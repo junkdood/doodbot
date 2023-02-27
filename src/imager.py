@@ -7,10 +7,13 @@ import cv2
 from cv_bridge import CvBridge
 import numpy as np
 from copy import deepcopy
-import tensorflow as tf
+import torch
 from pretrain import CNN
 from pretrain import BP
 from std_msgs.msg import Int32MultiArray
+
+cudaIdx = "cuda:0"  # GPU card index
+device = torch.device(cudaIdx if torch.cuda.is_available() else "cpu")
 
 def get_letter(num):
     return chr(num + 64) + " / " + chr(num + 96)  # 大写/小写字母
@@ -19,10 +22,8 @@ class Imager():
     def __init__(self):
 
         # CNN 相关
-        # self._predicter = Predict()
-        latest = tf.train.latest_checkpoint('./src/doodbot/CNNdata/modelckpt2')
         self._cnn = CNN()
-        self._cnn.model.load_weights(latest)
+        self._cnn.load_state_dict(torch.load('./src/doodbot/CNNdata/modelpth/model.pth', map_location=device))
 
         self._BP = BP()
         self._BP.loadweight('./src/doodbot/CNNdata/modelBP/result.npz')
@@ -208,13 +209,14 @@ class Imager():
         _, image = cv2.threshold(image,self._binpara,255,cv2.THRESH_BINARY)
         image = cv2.copyMakeBorder(image,self._border,self._border,self._border,self._border, cv2.BORDER_CONSTANT,value=(255 if len(image[image==255])>len(image[image==0]) else 0))
         image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
-        image = np.reshape(image, (28, 28, 1)) / 255
+        image = np.reshape(image, (1, 28, 28)) / 255
         x = np.array([1 - image])
 
-        y = self._cnn.model.predict(x)
+        
+        y = self._cnn(torch.tensor(x).float().to(device))
 
         # print(np.argmax(y[0]))
-        return np.argmax(y[0])
+        return torch.argmax(y[0])
 
     def predictBP(self, image):
         # 预测OX
