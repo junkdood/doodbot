@@ -249,9 +249,9 @@ class Train:
         self.cnn.train()
         for local_epoch in range(20):
             print(local_epoch)
-            optimizer.zero_grad()
             out_tensor = self.cnn(train_images)
-            loss = torch.nn.CrossEntropyLoss()(out_tensor, train_labels)
+            loss = nn.CrossEntropyLoss()(out_tensor, train_labels)
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 

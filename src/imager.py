@@ -22,8 +22,9 @@ class Imager():
     def __init__(self):
 
         # CNN 相关
-        self._cnn = CNN()
+        self._cnn = CNN().to(device)
         self._cnn.load_state_dict(torch.load('./src/doodbot/CNNdata/modelpth/model.pth', map_location=device))
+        self._cnn.eval()
 
         self._BP = BP()
         self._BP.loadweight('./src/doodbot/CNNdata/modelBP/result.npz')
@@ -255,12 +256,12 @@ class Imager():
             _, temp = cv2.threshold(image,self._binpara + steps[i], 255, cv2.THRESH_BINARY)
             temp = cv2.copyMakeBorder(temp,self._border,self._border,self._border,self._border, cv2.BORDER_CONSTANT,value= (255 if len(temp[temp==255])>len(temp[temp==0]) else 0) )
             temp = cv2.resize(cv2.rotate(cv2.flip(temp,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
-            temp = np.reshape(temp, (784)) / 255
-            temp = 1 - temp
-            y = self._BP.predict(temp)
-            # temp = np.reshape(temp, (28, 28, 1)) / 255
-            # temp = np.array([1 - temp])
-            # y = self._cnn.model.predict(temp)[0]
+            # temp = np.reshape(temp, (784)) / 255
+            # temp = 1 - temp
+            # y = self._BP.predict(temp)
+            temp = np.reshape(temp, (1, 28, 28)) / 255
+            temp = np.array([1 - temp])
+            y = self._cnn(torch.tensor(temp).float().to(device))[0]
             para = [-0.33, 1, -0.33, -0.33]
             for i in range(4):
                 result[i] += para[i]*y[i]
