@@ -147,36 +147,99 @@ class CNN(nn.Module):
             ),
             # output shape (32, 26, 26)
             nn.ReLU(),  # activation
-            nn.MaxPool2d(kernel_size=2)
+            nn.MaxPool2d(kernel_size=2),
             # output shape (32, 13, 13)
-        )        
-        
-        self.conv2 = nn.Sequential(      
+
             # input shape (32, 13, 13)
             nn.Conv2d(32, 64, 3, 1, 0),
             # output shape (64, 11, 11)
             nn.ReLU(),  # activation
-            nn.MaxPool2d(2)
+            nn.MaxPool2d(2),
             # output shape (64, 5, 5)
-        )
 
-        self.conv3 = nn.Sequential(      
             # input shape (64, 5, 5)
             nn.Conv2d(64, 64, 3, 1, 0),
             # output shape (64, 3, 3)
-            nn.ReLU(),  # activation
+            nn.ReLU()  # activation
             # output shape (64, 3, 3)
-        )
+        )        
 
-        self.fc = nn.Linear(64*3*3, 64)
-        self.out = nn.Linear(64, config['class_num']) 
+        self.conv2 = nn.Sequential(  
+            # input shape (1, 28, 28)
+            nn.Conv2d(
+                in_channels=1,  # 输入通道数
+                out_channels=32,  # 输出通道数
+                kernel_size=3,   # 卷积核大小          
+                stride=1,  #卷积步数
+                padding=0  # 如果想要 con2d 出来的图片长宽没有变化,padding=(kernel_size-1)/2 当 stride=1
+            ),
+            # output shape (32, 26, 26)
+            nn.ReLU(),  # activation
+            nn.MaxPool2d(kernel_size=2),
+            # output shape (32, 13, 13)
+
+            # input shape (32, 13, 13)
+            nn.Conv2d(32, 64, 3, 1, 0),
+            # output shape (64, 11, 11)
+            nn.ReLU(),  # activation
+            nn.MaxPool2d(2),
+            # output shape (64, 5, 5)
+
+            # input shape (64, 5, 5)
+            nn.Conv2d(64, 64, 3, 1, 0),
+            # output shape (64, 3, 3)
+            nn.ReLU()  # activation
+            # output shape (64, 3, 3)
+        )      
+
+        self.conv3 = nn.Sequential(  
+            # input shape (1, 28, 28)
+            nn.Conv2d(
+                in_channels=1,  # 输入通道数
+                out_channels=32,  # 输出通道数
+                kernel_size=3,   # 卷积核大小          
+                stride=1,  #卷积步数
+                padding=0  # 如果想要 con2d 出来的图片长宽没有变化,padding=(kernel_size-1)/2 当 stride=1
+            ),
+            # output shape (32, 26, 26)
+            nn.ReLU(),  # activation
+            nn.MaxPool2d(kernel_size=2),
+            # output shape (32, 13, 13)
+
+            # input shape (32, 13, 13)
+            nn.Conv2d(32, 64, 3, 1, 0),
+            # output shape (64, 11, 11)
+            nn.ReLU(),  # activation
+            nn.MaxPool2d(2),
+            # output shape (64, 5, 5)
+
+            # input shape (64, 5, 5)
+            nn.Conv2d(64, 64, 3, 1, 0),
+            # output shape (64, 3, 3)
+            nn.ReLU()  # activation
+            # output shape (64, 3, 3)
+        )      
+
+        self.fc1 = nn.Linear(64*3*3, 1*28*28)
+        self.fc2 = nn.Linear(64*3*3, 1*28*28)
+        self.fc3 = nn.Linear(64*3*3, 1*28*28)
+        self.out = nn.Linear(1*28*28, config['class_num']) 
         
     def forward(self, x):        
-        x = self.conv1(x)        
-        x = self.conv2(x)       
-        x = self.conv3(x)  
-        x = x.view(x.size(0), -1)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
-        x = self.fc(x)
+        x = self.conv1(x)
+        x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
+        x = self.fc1(x)
+
+        # x = x.view(x.size(0), 1,28,28)
+        # x = self.conv2(x)   
+        # x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
+        # x = self.fc2(x)    
+
+        # x = x.view(x.size(0), 1,28,28)
+        # x = self.conv3(x)   
+        # x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
+        # x = self.fc3(x)   
+
         output = self.out(x)        
         return output
 
