@@ -140,89 +140,147 @@ class CNN(nn.Module):
             # input shape (1, 28, 28)
             nn.Conv2d(
                 in_channels=1,  # 输入通道数
-                out_channels=32,  # 输出通道数
+                out_channels=320,  # 输出通道数
                 kernel_size=3,   # 卷积核大小          
                 stride=1,  #卷积步数
                 padding=0  # 如果想要 con2d 出来的图片长宽没有变化,padding=(kernel_size-1)/2 当 stride=1
             ),
-            # output shape (32, 26, 26)
+            # output shape (320, 26, 26)
             nn.ReLU(),  # activation
             nn.MaxPool2d(kernel_size=2),
-            # output shape (32, 13, 13)
+            # output shape (320, 13, 13)
 
-            # input shape (32, 13, 13)
-            nn.Conv2d(32, 64, 3, 1, 0),
-            # output shape (64, 11, 11)
+            # input shape (320, 13, 13)
+            nn.Conv2d(320, 640, 3, 1, 0),
+            # output shape (640, 11, 11)
             nn.ReLU(),  # activation
             nn.MaxPool2d(2),
-            # output shape (64, 5, 5)
+            # output shape (640, 5, 5)
 
-            # input shape (64, 5, 5)
-            nn.Conv2d(64, 64, 3, 1, 0),
+            # input shape (640, 5, 5)
+            nn.Conv2d(640, 64, 3, 1, 0),
             # output shape (64, 3, 3)
             nn.ReLU()  # activation
             # output shape (64, 3, 3)
-        )        
+        )       
 
         self.conv2 = nn.Sequential(  
             # input shape (1, 28, 28)
             nn.Conv2d(
                 in_channels=1,  # 输入通道数
-                out_channels=32,  # 输出通道数
+                out_channels=320,  # 输出通道数
                 kernel_size=3,   # 卷积核大小          
                 stride=1,  #卷积步数
                 padding=0  # 如果想要 con2d 出来的图片长宽没有变化,padding=(kernel_size-1)/2 当 stride=1
             ),
-            # output shape (32, 26, 26)
+            # output shape (320, 26, 26)
             nn.ReLU(),  # activation
             nn.MaxPool2d(kernel_size=2),
-            # output shape (32, 13, 13)
+            # output shape (320, 13, 13)
 
-            # input shape (32, 13, 13)
-            nn.Conv2d(32, 64, 3, 1, 0),
-            # output shape (64, 11, 11)
+            # input shape (320, 13, 13)
+            nn.Conv2d(320, 640, 3, 1, 0),
+            # output shape (640, 11, 11)
             nn.ReLU(),  # activation
             nn.MaxPool2d(2),
-            # output shape (64, 5, 5)
+            # output shape (640, 5, 5)
 
-            # input shape (64, 5, 5)
-            nn.Conv2d(64, 64, 3, 1, 0),
+            # input shape (640, 5, 5)
+            nn.Conv2d(640, 64, 3, 1, 0),
             # output shape (64, 3, 3)
             nn.ReLU()  # activation
             # output shape (64, 3, 3)
-        )      
+        )       
 
         self.conv3 = nn.Sequential(  
             # input shape (1, 28, 28)
             nn.Conv2d(
                 in_channels=1,  # 输入通道数
-                out_channels=32,  # 输出通道数
+                out_channels=320,  # 输出通道数
                 kernel_size=3,   # 卷积核大小          
                 stride=1,  #卷积步数
                 padding=0  # 如果想要 con2d 出来的图片长宽没有变化,padding=(kernel_size-1)/2 当 stride=1
             ),
-            # output shape (32, 26, 26)
+            # output shape (320, 26, 26)
             nn.ReLU(),  # activation
             nn.MaxPool2d(kernel_size=2),
-            # output shape (32, 13, 13)
+            # output shape (320, 13, 13)
 
-            # input shape (32, 13, 13)
-            nn.Conv2d(32, 64, 3, 1, 0),
-            # output shape (64, 11, 11)
+            # input shape (320, 13, 13)
+            nn.Conv2d(320, 640, 3, 1, 0),
+            # output shape (640, 11, 11)
             nn.ReLU(),  # activation
             nn.MaxPool2d(2),
-            # output shape (64, 5, 5)
+            # output shape (640, 5, 5)
 
-            # input shape (64, 5, 5)
-            nn.Conv2d(64, 64, 3, 1, 0),
+            # input shape (640, 5, 5)
+            nn.Conv2d(640, 64, 3, 1, 0),
             # output shape (64, 3, 3)
             nn.ReLU()  # activation
             # output shape (64, 3, 3)
         )      
 
+        self.conv4 = nn.Sequential(  
+            # input shape (1, 28, 28)
+            nn.Conv2d(
+                in_channels=1,  # 输入通道数
+                out_channels=320,  # 输出通道数
+                kernel_size=3,   # 卷积核大小          
+                stride=1,  #卷积步数
+                padding=0  # 如果想要 con2d 出来的图片长宽没有变化,padding=(kernel_size-1)/2 当 stride=1
+            ),
+            # output shape (320, 26, 26)
+            nn.ReLU(),  # activation
+            nn.MaxPool2d(kernel_size=2),
+            # output shape (320, 13, 13)
+
+            # input shape (320, 13, 13)
+            nn.Conv2d(320, 640, 3, 1, 0),
+            # output shape (640, 11, 11)
+            nn.ReLU(),  # activation
+            nn.MaxPool2d(2),
+            # output shape (640, 5, 5)
+
+            # input shape (640, 5, 5)
+            nn.Conv2d(640, 64, 3, 1, 0),
+            # output shape (64, 3, 3)
+            nn.ReLU()  # activation
+            # output shape (64, 3, 3)
+        )
+
+        self.conv5 = nn.Sequential(  
+            # input shape (1, 28, 28)
+            nn.Conv2d(
+                in_channels=1,  # 输入通道数
+                out_channels=320,  # 输出通道数
+                kernel_size=3,   # 卷积核大小          
+                stride=1,  #卷积步数
+                padding=0  # 如果想要 con2d 出来的图片长宽没有变化,padding=(kernel_size-1)/2 当 stride=1
+            ),
+            # output shape (320, 26, 26)
+            nn.ReLU(),  # activation
+            nn.MaxPool2d(kernel_size=2),
+            # output shape (320, 13, 13)
+
+            # input shape (320, 13, 13)
+            nn.Conv2d(320, 640, 3, 1, 0),
+            # output shape (640, 11, 11)
+            nn.ReLU(),  # activation
+            nn.MaxPool2d(2),
+            # output shape (640, 5, 5)
+
+            # input shape (640, 5, 5)
+            nn.Conv2d(640, 64, 3, 1, 0),
+            # output shape (64, 3, 3)
+            nn.ReLU()  # activation
+            # output shape (64, 3, 3)
+        )
+
         self.fc1 = nn.Linear(64*3*3, 1*28*28)
         self.fc2 = nn.Linear(64*3*3, 1*28*28)
         self.fc3 = nn.Linear(64*3*3, 1*28*28)
+        self.fc4 = nn.Linear(64*3*3, 1*28*28)
+        self.fc5 = nn.Linear(64*3*3, 1*28*28)
         self.out = nn.Linear(1*28*28, config['class_num']) 
         
     def forward(self, x):        
@@ -230,15 +288,25 @@ class CNN(nn.Module):
         x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
         x = self.fc1(x)
 
-        # x = x.view(x.size(0), 1,28,28)
-        # x = self.conv2(x)   
-        # x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
-        # x = self.fc2(x)    
+        x = x.view(x.size(0), 1,28,28)
+        x = self.conv2(x)   
+        x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
+        x = self.fc2(x)    
 
-        # x = x.view(x.size(0), 1,28,28)
-        # x = self.conv3(x)   
-        # x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
-        # x = self.fc3(x)   
+        x = x.view(x.size(0), 1,28,28)
+        x = self.conv3(x)   
+        x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
+        x = self.fc3(x)   
+
+        x = x.view(x.size(0), 1,28,28)
+        x = self.conv4(x)   
+        x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
+        x = self.fc4(x)  
+
+        x = x.view(x.size(0), 1,28,28)
+        x = self.conv5(x)   
+        x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
+        x = self.fc5(x)  
 
         output = self.out(x)        
         return output
@@ -310,13 +378,23 @@ class Train:
         test_labels = torch.from_numpy(self.data.test_labels).long().to(device)
 
         self.cnn.train()
-        for local_epoch in range(20):
+        for local_epoch in range(2):
             print(local_epoch)
-            out_tensor = self.cnn(train_images)
-            loss = nn.CrossEntropyLoss()(out_tensor, train_labels)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+
+            for i in range(int(len(train_images)/50)):
+                index = []
+                list_length = 50
+                while len(index) < list_length:
+                    index.append(np.random.randint(0,len(train_images)))
+
+                train_image = train_images[index]
+                train_label = train_labels[index]
+
+                out_tensor = self.cnn(train_image)
+                loss = nn.CrossEntropyLoss()(out_tensor, train_label)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
         torch.save(self.cnn.state_dict(), config['check_path'],_use_new_zipfile_serialization=False)
 
@@ -334,7 +412,7 @@ class Train:
             print("acc is ", np.array(acc).mean())
 
             begin_t = rospy.Time.now()
-            out = self.cnn(test_images[i:i+1])[0]
+            out = self.cnn(test_images[0:0+1])[0]
             print(out)
             end_t = rospy.Time.now()
             print("Duration: {}".format((end_t - begin_t).to_sec()))
