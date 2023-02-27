@@ -8,36 +8,12 @@ from cv_bridge import CvBridge
 import numpy as np
 from copy import deepcopy
 import tensorflow as tf
-from pretrain import CNN2
+from pretrain import CNN
 from pretrain import BP
 from std_msgs.msg import Int32MultiArray
 
 def get_letter(num):
     return chr(num + 64) + " / " + chr(num + 96)  # 大写/小写字母
-# 用于预测字母的接口，已废弃，整合进Imager了
-class Predict(object):
-    def __init__(self):
-        latest = tf.train.latest_checkpoint('./src/doodbot/CNNdata/modelckpt2')
-        self.cnn = CNN2()
-        self.cnn.model.load_weights(latest)
-
-    def predict_tf(self, image):
-        image = cv2.cvtColor(image,cv2.COLOR_RGB2GRAY)
-        _, image = cv2.threshold(image,238,255,cv2.THRESH_BINARY)
-        image = cv2.copyMakeBorder(image,10,10,10,10, cv2.BORDER_CONSTANT,value=255)
-        image = cv2.resize(cv2.rotate(cv2.flip(image,1), cv2.ROTATE_90_CLOCKWISE), (28, 28), interpolation=cv2.INTER_AREA)
-        image = np.reshape(image, (28, 28, 1)) / 255
-        x = np.array([1 - image])
-
-        y = self.cnn.model.predict(x)
-
-        # print(np.argmax(y[0]))
-        # print('\t-> 这个图片写的是：', get_letter(np.argmax(y[0])))
-        return np.argmax(y[0])
-
-    def predict_normal(self, image):
-        pass
-
 
 class Imager():
     def __init__(self):
@@ -45,7 +21,7 @@ class Imager():
         # CNN 相关
         # self._predicter = Predict()
         latest = tf.train.latest_checkpoint('./src/doodbot/CNNdata/modelckpt2')
-        self._cnn = CNN2()
+        self._cnn = CNN()
         self._cnn.model.load_weights(latest)
 
         self._BP = BP()

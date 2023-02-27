@@ -2,24 +2,17 @@
 # coding:utf-8 
 import os
 import rospy
-import tensorflow as tf
-from tensorflow.keras import layers, models
+import torch
+import torch.nn as nn
 import gzip
 import numpy as np
 import cv2
 
-config = {
-    'check_path': "./src/doodbot/CNNdata/modelckpt/cp-{epoch:04d}.ckpt",
-    'class_num': 27,
-    'data_sets': [
-        './src/doodbot/CNNdata/dataset/emnist-letters-train-labels-idx1-ubyte.gz',
-        './src/doodbot/CNNdata/dataset/emnist-letters-train-images-idx3-ubyte.gz',
-        './src/doodbot/CNNdata/dataset/emnist-letters-test-labels-idx1-ubyte.gz',
-        './src/doodbot/CNNdata/dataset/emnist-letters-test-images-idx3-ubyte.gz']
-}
+cudaIdx = "cuda:0"  # GPU card index
+device = torch.device(cudaIdx if torch.cuda.is_available() else "cpu")
 
-config2 = {
-    'check_path': "./src/doodbot/CNNdata/modelckpt2/cp-{epoch:04d}.ckpt",
+config = {
+    'check_path': "./src/doodbot/CNNdata/modelpth/model.pth",
     'BP_path': "./src/doodbot/CNNdata/modelBP/result.npz",
     'class_num': 4,
     'data_sets': [
@@ -58,89 +51,9 @@ def read_idx1(filename):
         data = np.frombuffer(buf, '>B', num_labels, offset)
         return data
 
-
-class CNN(object):
-    def __init__(self):
-        self.model = self.model()
-
-    @staticmethod
-    def model():
-        # LetNet
-        model = models.Sequential()
-        model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
-        model.add(layers.MaxPooling2D((2, 2)))
-        model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-        model.add(layers.MaxPooling2D((2, 2)))
-        model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-        model.add(layers.Flatten())
-
-        
-        model.add(layers.Dense(64, activation='relu'))
-        model.add(layers.Dense(config['class_num'], activation=tf.nn.softmax, name='predictions'))
-        # model.summary()
-        return model
-
 class getData(object):
     def __init__(self):
         files = config['data_sets']
-
-        train_labels = read_idx1(files[0])
-        train_images, train_images_num = read_idx3(files[1])
-        test_labels = read_idx1(files[2])
-        test_images, test_images_num = read_idx3(files[3])
-
-        train_images = train_images.reshape((train_images_num, 28, 28, 1))
-        test_images = test_images.reshape((test_images_num, 28, 28, 1))
-
-        train_images, test_images = train_images / 255.0, test_images / 255.0
-
-        self.train_images, self.train_labels = train_images, train_labels
-        self.test_images, self.test_labels = test_images, test_labels
-
-
-class Train:
-    def __init__(self):
-        self.cnn = CNN()
-        self.data = getData()
-
-    def train(self):
-        check_path = config['check_path']
-        save_model_cb = tf.keras.callbacks.ModelCheckpoint(check_path, save_weights_only=True, verbose=1, period=5)
-        self.cnn.model.compile(optimizer='adam',
-                               loss='sparse_categorical_crossentropy',
-                               metrics=['accuracy'])
-
-
-        self.cnn.model.fit(self.data.train_images, self.data.train_labels, epochs=20, callbacks=[save_model_cb])
-
-        test_loss, test_acc = self.cnn.model.evaluate(self.data.test_images, self.data.test_labels)
-        print("准确率: %.4f，共测试了%d张图片 " % (test_acc, len(self.data.test_labels)))
-
-
-class CNN2(object):
-    def __init__(self):
-        self.model = self.model()
-
-    @staticmethod
-    def model():
-        # LetNet
-        model = models.Sequential()
-        model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
-        model.add(layers.MaxPooling2D((2, 2)))
-        model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-        model.add(layers.MaxPooling2D((2, 2)))
-        model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-        model.add(layers.Flatten())
-
-        
-        model.add(layers.Dense(64, activation='relu'))
-        model.add(layers.Dense(config2['class_num'], activation=tf.nn.softmax, name='predictions'))
-        # model.summary()
-        return model
-
-class getData2(object):
-    def __init__(self):
-        files = config2['data_sets']
 
         train_labels = read_idx1(files[0])
         train_images, train_images_num = read_idx3(files[1])
@@ -218,6 +131,55 @@ class getData2(object):
         self.train_images, self.train_labels = train_images, train_labels
         self.test_images, self.test_labels = test_images, test_labels
 
+
+# 定义神经网络
+class CNN(nn.Module):
+    def __init__(self):
+        super(CNN, self).__init__()
+        self.conv1 = nn.Sequential(  
+            # input shape (1, 28, 28)
+            nn.Conv2d(
+                in_channels=1,  # 输入通道数
+                out_channels=32,  # 输出通道数
+                kernel_size=3,   # 卷积核大小          
+                stride=1,  #卷积步数
+                padding=0  # 如果想要 con2d 出来的图片长宽没有变化,padding=(kernel_size-1)/2 当 stride=1
+            ),
+            # output shape (32, 26, 26)
+            nn.ReLU(),  # activation
+            nn.MaxPool2d(kernel_size=2)
+            # output shape (32, 13, 13)
+        )        
+        
+        self.conv2 = nn.Sequential(      
+            # input shape (32, 13, 13)
+            nn.Conv2d(32, 64, 3, 1, 0),
+            # output shape (64, 11, 11)
+            nn.ReLU(),  # activation
+            nn.MaxPool2d(2)
+            # output shape (64, 5, 5)
+        )
+
+        self.conv3 = nn.Sequential(      
+            # input shape (64, 5, 5)
+            nn.Conv2d(64, 64, 3, 1, 0),
+            # output shape (64, 3, 3)
+            nn.ReLU(),  # activation
+            # output shape (64, 3, 3)
+        )
+
+        self.fc = nn.Linear(64*3*3, 64)
+        self.out = nn.Linear(64, config['class_num']) 
+        
+    def forward(self, x):        
+        x = self.conv1(x)        
+        x = self.conv2(x)        
+        x = x.view(x.size(0), -1)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
+        x = self.fc(x)
+        output = self.out(x)        
+        return output
+
+
 def active_f(x):
     return np.maximum(0, x)
 def active_f_g(x):
@@ -228,7 +190,7 @@ class BP:
         #初始化参数
         input_nodes = 784
         hidden_nodes = 50
-        output_nodes = config2['class_num']
+        output_nodes = config['class_num']
         learning_rate = 0.01
         self.__weight1 = np.random.normal(0.0, pow(hidden_nodes, -0.5), (hidden_nodes, input_nodes))
         self.__weight2 = np.random.normal(0.0, pow(output_nodes, -0.5), (output_nodes, hidden_nodes))
@@ -268,29 +230,47 @@ class BP:
 
 
 
-class Train2:
+class Train:
     def __init__(self):
-        self.cnn = CNN2()
-        self.data = getData2()
+        self.cnn = CNN()
+        self.data = getData()
 
         self.bp = BP()
 
     def train(self):
-        check_path = config2['check_path']
-        save_model_cb = tf.keras.callbacks.ModelCheckpoint(check_path, save_weights_only=True, verbose=1, period=5)
-        self.cnn.model.compile(optimizer='adam',
-                               loss='sparse_categorical_crossentropy',
-                               metrics=['accuracy'])
+        optimizer = torch.optim.Adam(self.cnn.parameters())
+        self.cnn.to(device)
+        images_tensor = torch.from_numpy(self.data.train_images).to(device)
+        labels_tensor = torch.from_numpy(self.data.train_labels).to(device)
 
+        self.cnn.train()
+        for local_epoch in range(20):
+            optimizer.zero_grad()
+            out_tensor = self.cnn(images_tensor)
+            loss = torch.nn.Nllloss()(torch.log(out_tensor), labels_tensor)
+            loss.backward()
+            optimizer.step()
 
-        self.cnn.model.fit(self.data.train_images, self.data.train_labels, epochs=20, callbacks=[save_model_cb])
+        torch.save(self.cnn.state_dict(), config['check_path'],_use_new_zipfile_serialization=False)
 
-        test_loss, test_acc = self.cnn.model.evaluate(self.data.test_images, self.data.test_labels)
-        print("准确率: %.4f，共测试了%d张图片 " % (test_acc, len(self.data.test_labels)))
-        begin_t = rospy.Time.now()
-        Num = self.cnn.model.predict(np.array([self.data.test_images[0]]))
-        end_t = rospy.Time.now()
-        print("Duration: {}".format((end_t - begin_t).to_sec()))
+        self.cnn.eval()
+        with torch.no_grad():
+            acc = []
+            for i in range(len(images_tensor)):
+                label = torch.argmax(self.cnn(images_tensor[i]))
+                #选取概率最大的数字为输出，若和标签相同则预测成功
+                if int(labels_tensor[i]) == label:
+                    acc.append(1)
+                else:
+                    acc.append(0)
+            #计算平均准确率
+            print("acc is ", np.array(acc).mean())
+
+            begin_t = rospy.Time.now()
+            out = self.cnn(images_tensor[0])
+            print(out)
+            end_t = rospy.Time.now()
+            print("Duration: {}".format((end_t - begin_t).to_sec()))
 
 
     def trainBP(self):
@@ -301,7 +281,7 @@ class Train2:
                 label = [0,0,0,0]
                 label[int(self.data.train_labels[i])] = 1
                 self.bp.train(self.data.train_images[i].reshape(784),label)
-        self.bp.saveweight(config2['BP_path'])
+        self.bp.saveweight(config['BP_path'])
         acc = []
         for i in range(len(self.data.test_images)):
             label = np.argmax(self.bp.predict(self.data.test_images[i].reshape(784)))
@@ -322,6 +302,6 @@ class Train2:
 
 if __name__ == "__main__":
     rospy.init_node('train')
-    trainer = Train2()
+    trainer = Train()
     trainer.train()
     # trainer.trainBP()
