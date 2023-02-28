@@ -107,13 +107,21 @@ rosbag play -l rosbag/camera.bag
 
 现在的图像识别速度很慢
 ```
-         topic             rate   min_delta   max_delta   std_dev   window
-==========================================================================
-/OXstate                  1.5     0.5661      0.7845      0.04445   107   
-/kinect2/hd/image_color   39.08   0.006238    0.05376     0.01023   107
+         topic             rate   min_delta   max_delta   std_dev    window
+===========================================================================
+/OXstate                  1.696   0.4838      0.9212      0.1528     41    
+/kinect2/hd/image_color   38.98   0.006368    0.04386     0.009926   41    
 ```
 
-可以看到话题输入`/kinect2/hd/image_color`可以达到40帧，话题输出`/OXstate`只有1.5帧。考虑用KubeEdge加速。
+可以看到话题输入`/kinect2/hd/image_color`可以达到40帧，话题输出`/OXstate`只有1.6帧。考虑用KubeEdge加速。
+
+在有GPU的服务器的速度很快
+```
+         topic             rate   min_delta   max_delta   std_dev   window
+==========================================================================
+/OXstate                  15.76   0.04931     0.09205     0.01168   173   
+/kinect2/hd/image_color   39.45   0.003099    0.03845     0.01149   173
+```
 
 ### Xbox控制指南
 
