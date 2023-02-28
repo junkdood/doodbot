@@ -165,9 +165,10 @@ rviz
 
 3. 安装 c++ 的 casadi
    ```sh
-   sudo apt-get install coinor-libipopt-dev
-   sudo apt install gfortran
-   sudo apt install swig
+   sudo apt-get install coinor-libipopt-dev -y
+   sudo apt install gfortran -y
+   sudo apt install swig -y
+   sudo apt install libatlas-base-dev
    git clone https://github.com/casadi/casadi.git -b master casadi 
    cd casadi
    mkdir build

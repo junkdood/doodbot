@@ -378,7 +378,7 @@ class Train:
         test_labels = torch.from_numpy(self.data.test_labels).long().to(device)
 
         self.cnn.train()
-        for local_epoch in range(2):
+        for local_epoch in range(20):
             print(local_epoch)
 
             for i in range(int(len(train_images)/50)):
