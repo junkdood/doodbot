@@ -168,7 +168,7 @@ rviz
    sudo apt-get install coinor-libipopt-dev -y
    sudo apt install gfortran -y
    sudo apt install swig -y
-   sudo apt install libatlas-base-dev
+   sudo apt install libatlas-base-dev -y
    git clone https://github.com/casadi/casadi.git -b master casadi 
    cd casadi
    mkdir build
