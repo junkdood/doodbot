@@ -286,9 +286,9 @@ class CNN(nn.Module):
     def forward(self, x):        
         x = self.conv1(x)
         x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
-        x = self.fc1(x)
+        x1 = self.fc1(x)
 
-        x = x.view(x.size(0), 1,28,28)
+        x = x1.view(x1.size(0), 1,28,28)
         x = self.conv2(x)   
         x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
         x = self.fc2(x)    
@@ -308,7 +308,7 @@ class CNN(nn.Module):
         x = x.view(x.size(0), 64*3*3)  # 展平多维的卷积图成 (batch_size, 64 * 3 * 3)
         x = self.fc5(x)  
 
-        output = self.out(x)        
+        output = self.out(x+x1)        
         return output
 
 
